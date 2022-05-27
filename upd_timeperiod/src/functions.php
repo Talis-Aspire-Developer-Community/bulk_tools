@@ -193,10 +193,27 @@ function setDryRun() {
 
     echo "Writing to live tenancy?: $write_to_live";
     echo "<br>";
-    echo "<br>";
 
     return $write_to_live;
 }
+
+function setIncludeInactive() {
+    if(isset($_REQUEST['INCLUDE_INACTIVE']) &&
+    $_REQUEST['INCLUDE_INACTIVE'] == "include_inactive") {
+        $include_inactive = "true";
+    }
+    else
+    {
+        $include_inactive = "false";
+    }
+
+    echo "Allow updating with inactive time periods?: $include_inactive";
+    echo "<br>";
+    echo "<br>";
+
+    return $include_inactive;
+}
+
 
 function getFriendlyLogLevelName($log_level) {
     // Map log levels to friendly names for humans

@@ -36,9 +36,14 @@
         Updates lists with the supplied time period.
         <h2>Configuration</h2>
         CSV file should include a List ID and its new time period per line.<br>
-        If unsure what time periods are valid, run this tool in <strong>List active time periods</strong> mode first (upload file not requried).<br>
+        Report defaults to only writing active time periods to lists, but can be run to udpate lists with inactive time periods.<br><br>
+
+        If unsure what time periods are valid, run this tool in <strong>List active time periods</strong> mode (upload file not requried).<br><br>
+        
         <form enctype="multipart/form-data" action="comp.php" method="POST">
             <input type="hidden" name="MAX_FILE_SIZE" value="3000000" />
+            <input type="checkbox" name="LIST_MODE" value="list_mode">
+            <label for="list_mode">List active time periods mode <small>(no changes made, upload file ignored)</small></label><br>
             <br>Upload csv file: <input name="userfile" type="file"/>
             <br><br>Select logging level: 
                     <select name="loglvl">
@@ -50,8 +55,8 @@
             <br><br>
             <input type="checkbox" name="DRY_RUN" value="write_to_live">
             <label for="dryrun">Write to live tenancy?</label><br>
-            <input type="checkbox" name="LIST_MODE" value="list_mode">
-            <label for="tp_mode">List active time periods mode <small>(no changes made, upload file ignored)</small></label><br>
+            <input type="checkbox" name="INCLUDE_INACTIVE" value="include_inactive">
+            <label for="include_inactive">Include inactive time periods?</label>
             <h2>Action</h2>
             <input type="submit" value="Send" />
         </form>

@@ -52,7 +52,10 @@ if (listTimePeriodMode()) {
     exit;
 }
 
+// Set run options
 $write_to_live = setDryRun();
+$include_inactive = setIncludeInactive();
+
 // Upload file
 $uploads_dir = '../uploads/';
 $upload_file = $uploads_dir . basename($_FILES['userfile']['name']);
@@ -112,18 +115,30 @@ while (($line = fgetcsv($file_handle, 1000, ",")) !== FALSE) {
         fwrite($myfile, "No old time period set\t");
     }
 
-    // Search for the new time period's id in $active_time_periods
-    if (!empty(array_search(strtolower($new_time_period_desc), array_map('strtolower', $active_time_periods)))) {
-        // New time period description matches an active tenancy time period description
-        $new_time_period_id = array_search(strtolower($new_time_period_desc), array_map('strtolower', $active_time_periods));
+    // Search for the new time period's id
+    if ($include_inactive === "true") {
+        $search_array = $all_time_periods;
+    } else {
+        $search_array = $active_time_periods;
+    }
+    if (!empty(array_search(strtolower($new_time_period_desc), array_map('strtolower', $search_array)))) {
+        // New time period description matches a time period description
+        $new_time_period_id = array_search(strtolower($new_time_period_desc), array_map('strtolower', $search_array));
+        $new_time_period_desc = $search_array[$new_time_period_id]; // Get and report the new time period description from source using found id (not from user supplied file)
         echoMessageToScreen(INFO, "New time period: $new_time_period_desc");
         fwrite($myfile, $new_time_period_desc . "\t");
     } else {
-        // New time period does not match any active tenancy time period, continue with next line of file
-        echoMessageToScreen(WARNING, "$new_time_period_desc does not match an existing active time period - check your upload file for incorrect time periods");
-        echoMessageToScreen(WARNING, "For a list of your tenancy's active time periods run this tool in <strong>List active time periods</strong> mode<br>");
-        fwrite($myfile, "$new_time_period_desc does not match an existing active time period\tNothing updated\r\n");
-        continue;
+        // New time period does not match a tenancy time period, continue with next line of file
+        if ($include_inactive ==="true") {
+            echoMessageToScreen(WARNING, "$new_time_period_desc does not match an existing time period - check your upload file for incorrect time periods<br>");
+            fwrite($myfile, "$new_time_period_desc does not match an existing time period\tNothing updated\r\n");
+            continue;
+        } else {
+            echoMessageToScreen(WARNING, "$new_time_period_desc does not match an existing active time period - check your upload file for incorrect time periods");
+            echoMessageToScreen(WARNING, "For a list of your tenancy's active time periods run this tool in <strong>List active time periods</strong> mode<br>");
+            fwrite($myfile, "$new_time_period_desc does not match an existing active time period\tNothing updated\r\n");
+            continue;
+        }
     }
 
     // Patch request
