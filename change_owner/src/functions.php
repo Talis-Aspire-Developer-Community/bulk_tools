@@ -18,7 +18,7 @@ function token_fetch($clientID, $secret) {
 	if ($info !== 200) {
 		echo "<p>ERROR: There was an error getting a token:</p><pre>" . var_export($return, true) . "</pre>";
 	} else {
-		echo "Successfully received token</br></br>";
+		echo "Successfully received token</br>";
 	}
 
 	curl_close($ch);
@@ -78,7 +78,6 @@ function guidv4($data = null) {
 
 function ownerPatch($shortCode, $TalisGUID, $token, $input, $listID, $ownerID, $myfile) {
 	
-	//var_export($input);
 	$item_patch = 'https://rl.talis.com/3/' . $shortCode . '/lists/' . $listID . '/relationships/owners';
 	$ch = curl_init();
 
@@ -97,17 +96,15 @@ function ownerPatch($shortCode, $TalisGUID, $token, $input, $listID, $ownerID, $
 	
 	$output = curl_exec($ch);
 	$info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-	//echo $info;
 
-	$output_json_etag = json_decode($output);
+	$output_json = json_decode($output);
 	
 	curl_close($ch);
 	if ($info !== 200){
 		echo "<p>ERROR: There was an error assigning the list owner:</p><pre>" . var_export($output, true) . "</pre>";
-		fwrite($myfile, "Failed" . "\r\n");
+		return false;
 	} else {
-		echo "List: $listID has been successfully assigned owner: $ownerID</br>";
-		fwrite($myfile, "Success" . "\r\n");
+		return true;
 	}
 	
 }
@@ -123,4 +120,41 @@ function patchBody($etag, $listID, $ownerID) {
 
 			return $input;
 }
+
+function setDryRun() {
+    if(isset($_REQUEST['DRY_RUN']) &&
+    $_REQUEST['DRY_RUN'] == "write_to_live") {
+        $write_to_live = "true";
+    }
+    else
+    {
+        $write_to_live = "false";
+    }
+
+    echo "Writing to live tenancy?: $write_to_live";
+    echo "<br>";
+
+    return $write_to_live;
+}
+
+function getFriendlyLogLevelName($log_level) {
+    // Map log levels to friendly names for humans
+    $log_level_map = [
+        4 => "DEBUG",
+        3 => "INFO",
+        2 => "WARN",
+        1 => "ERROR"
+    ];
+    return $log_level_map[$log_level];
+}
+
+function echoMessageToScreen($log_level, $message){
+    global $LOG_LEVEL;
+    // Echo the log message if the log level says we should.
+    if ($LOG_LEVEL >= $log_level) {
+        $friendly_name = getFriendlyLogLevelName($log_level);
+        echo "<br><strong>{$friendly_name}</strong>  $message";
+    }
+}
+
 ?>

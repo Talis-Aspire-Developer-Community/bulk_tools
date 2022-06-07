@@ -34,23 +34,28 @@
 </br><a href="../../index.html">Back to Index</a></br>
 
 <div id="TARL_bulk updater">
-		<h1>Change Owner</h1>
-		<h2></h2>
-				
-			<form enctype="multipart/form-data" action="comp.php" method="POST">
-				<input type="hidden" name="MAX_FILE_SIZE" value="3000000" />
-				<h2>Configuration</h2>
-				<p>If you have not created your own <code>user.config.php</code> file as a copy of the template in the project root directory do so now!!</p>
-				<p>Otherwise, this script will give you an error about not being able to find the <code>user.config.php</code> file.</p>
-				<br/>
-				<p>Your file should be a comma separated file with the desired ownerGUID followed by the ListID to update. like so:<br/><br/>FPhSKLRgtxexsKNHsdoHeA,FAEFE97D-1632-FD57-34BB-A5163D3F8F81</br>FPhSKLRgtxexsKNHsdoHeA,8ECC1F07-AA1F-112C-F471-2BBC0865E453</p><br/>
-				List IDs file: <input name="userfile" type="file"/><br/><br/>
-				<h2>Action</h2>
-				
-				<input type="submit" value="Send" />
-			</form>
-		
-		
+	<h1>Change Owner</h1>
+	Updates lists with supplied owner (Talis UserGUID)
+	<h2>Configuration</h2>
+	<p>Your file should be a comma separated file with the ListID followed by desired ownerGUID, like so:<br/><br/>FAEFE97D-1632-FD57-34BB-A5163D3F8F81,FPhSKLRgtxexsKNHsdoHeA</br>8ECC1F07-AA1F-112C-F471-2BBC0865E453,FPhSKLRgtxexsKNHsdoHeA</p><br/>
+	<form enctype="multipart/form-data" action="comp.php" method="POST">
+		<input type="hidden" name="MAX_FILE_SIZE" value="3000000" />
+		<br>Upload csv file: <input name="userfile" type="file"/>
+        <br><br>Select logging level: 
+			<select name="loglvl">
+				<option value="2">WARNING</option>
+				<option value="1">ERROR</option>
+				<option value="3">INFO</option>
+				<option value="4">DEBUG</option>
+			</select>
+		<br><br>
+		<input type="checkbox" name="DRY_RUN" value="write_to_live">
+		<label for="dryrun">Write to live tenancy?</label><br>
+		<h2>Action</h2>
+		<input type="submit" value="Send" />
+	</form>
+	
+	
 </div>
 
 		
