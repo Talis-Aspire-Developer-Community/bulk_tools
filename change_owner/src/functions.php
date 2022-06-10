@@ -34,6 +34,123 @@ function token_fetch($clientID, $secret) {
 	return $token;
 }
 
+function getListOwnerId($shortCode, $TalisGUID, $token, $listID) {
+	$request_url = 'https://rl.talis.com/3/' . $shortCode . '/draft_lists/' . $listID;
+
+	$ch = curl_init();
+	
+	curl_setopt($ch, CURLOPT_URL, $request_url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+	
+		"X-Effective-User: $TalisGUID",
+		"Authorization: Bearer $token",
+		'Cache-Control: no-cache'
+	
+	));
+	$output = curl_exec($ch);
+	$info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	$output_json = json_decode($output);
+	curl_close($ch);
+
+	if ($info !== 200) {
+        echoMessageToScreen(WARNING, "Unable to retrieve list data: <pre>" . var_export($output, true) . "</pre>");
+        return false;
+    } else {
+		echoMessageToScreen(DEBUG, "Successfully retrieved list data: <pre>" . var_export($output, true) . "</pre>");
+		if (count($output_json->data->relationships->owners->data) > 0) {
+			$owner_id = $output_json->data->relationships->owners->data[0]->id or $owner_id = false;
+			return $owner_id;
+		} else {
+			return false;
+		}
+	}
+}
+
+function getUserName($shortCode, $TalisGUID, $token, $user_id) {
+	$request_url = 'https://rl.talis.com/3/' . $shortCode . '/users/' . $user_id;
+
+	$ch = curl_init();
+	
+	curl_setopt($ch, CURLOPT_URL, $request_url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+	
+		"X-Effective-User: $TalisGUID",
+		"Authorization: Bearer $token",
+		'Cache-Control: no-cache'
+	
+	));
+	$output = curl_exec($ch);
+	$info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	$output_json = json_decode($output);
+	curl_close($ch);
+
+	if ($info != 200) {
+		echoMessageToScreen(WARNING, "Unable to retrieve user data: <pre>" . var_export($output, true) . "</pre>");
+		return false;
+	} else {
+		echoMessageToScreen(DEBUG, "User data: <pre>" . var_export($output, true) . "</pre>");
+		$first_name = $output_json->data->attributes->first_name or $first_name = null; // or used instead of mutiple if blocks
+		$surname = $output_json->data->attributes->surname or $surname = null; 
+		$fullname = "$first_name $surname";
+		return $fullname;
+	}
+}
+
+function searchUser($shortCode, $TalisGUID, $token, $search_term) {
+	$request_url = 'https://rl.talis.com/3/' . $shortCode . '/users?page[limit]=10&page[offset]=0&filter[search_term]=' . $search_term;
+
+	$ch = curl_init();
+	
+	curl_setopt($ch, CURLOPT_URL, $request_url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+	
+		"X-Effective-User: $TalisGUID",
+		"Authorization: Bearer $token",
+		'Cache-Control: no-cache'
+	
+	));
+	$output = curl_exec($ch);
+	$info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	$output_json = json_decode($output);
+	curl_close($ch);
+
+	if ($info != 200) {
+		echoMessageToScreen(WARNING, "Unable to retrieve user profile data: <pre>" . var_export($output, true) . "</pre>");
+		return false;
+	} else {
+		echoMessageToScreen(DEBUG, "User profiles found: <pre>" . var_export($output, true) . "</pre>");
+		$users_found = $output_json->meta->total;
+		echoMessageToScreen(DEBUG, "$users_found users matched search term");
+		//echoMessageToScreen(DEBUG, "Successfully retrieved user profile data matching search term: <pre>" . var_export($output, true) . "</pre>");
+		if ($users_found == 0) {
+			return false;
+		} else {
+			if ($users_found > 1) { // If more than one match (for whatever reason, making no assumptions about the data) we need to find the first record that matches the supplied search term
+				// Find first result that matches email
+				for ($i = 0, $size = count($output_json->data); $i < $size; ++$i) {
+					if ($search_term == $output_json->data[$i]->attributes->email) {
+						$record_num = $i;
+						break;
+					}
+				}
+			} else {
+				$record_num = 0;
+			}
+
+			$first_name = $output_json->data[$record_num]->attributes->first_name or $first_name = null; // or used instead of mutiple if blocks
+			$surname = $output_json->data[$record_num]->attributes->surname or $surname = null;
+			$fullname = "$first_name $surname";
+			$user_id = $output_json->data[$record_num]->id or $user_id = null;
+
+			$user_data = array("fullname"=>$fullname, "id"=>$user_id, "users_found"=>$users_found);
+			return $user_data;
+		}
+	}
+}
+
 function etag_fetch($shortCode, $listID, $TalisGUID, $token) {
 	$url = 'https://rl.talis.com/3/' . $shortCode . '/draft_lists/' . $listID;
 	
@@ -135,6 +252,22 @@ function setDryRun() {
     echo "<br>";
 
     return $write_to_live;
+}
+
+function setEmailMode() {
+    if(isset($_REQUEST['EMAIL_MODE']) &&
+    $_REQUEST['EMAIL_MODE'] == "user_email_mode") {
+        $user_email_mode = "true";
+    }
+    else
+    {
+        $user_email_mode = "false";
+    }
+
+    echo "Update owner using user email?: $user_email_mode<br>";
+    echo "<br>";
+
+    return $user_email_mode;
 }
 
 function getFriendlyLogLevelName($log_level) {

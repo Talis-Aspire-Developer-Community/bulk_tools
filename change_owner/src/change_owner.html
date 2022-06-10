@@ -35,13 +35,20 @@
 
 <div id="TARL_bulk updater">
 	<h1>Change Owner</h1>
-	Updates lists with supplied owner (Talis UserGUID)
+	Updates lists with supplied owner (Talis Global User ID or email address)
 	<h2>Configuration</h2>
-	<p>Your file should be a comma separated file with the ListID followed by desired ownerGUID, like so:<br/><br/>FAEFE97D-1632-FD57-34BB-A5163D3F8F81,FPhSKLRgtxexsKNHsdoHeA</br>8ECC1F07-AA1F-112C-F471-2BBC0865E453,FPhSKLRgtxexsKNHsdoHeA</p><br/>
+	<p>Your file should be either a comma separated file (csv) with:<br><br>
+		<ul>
+		<li>List ID followed by Talis Global User ID</li>
+		or<br>
+		<li>List ID followed by an email address</li>
+		</ul>
+	</p>
 	<form enctype="multipart/form-data" action="comp.php" method="POST">
 		<input type="hidden" name="MAX_FILE_SIZE" value="3000000" />
 		<br>Upload csv file: <input name="userfile" type="file"/>
-        <br><br>Select logging level: 
+		<h4>Options</h4>
+		Select logging level: 
 			<select name="loglvl">
 				<option value="2">WARNING</option>
 				<option value="1">ERROR</option>
@@ -51,6 +58,8 @@
 		<br><br>
 		<input type="checkbox" name="DRY_RUN" value="write_to_live">
 		<label for="dryrun">Write to live tenancy?</label><br>
+		<input type="checkbox" name="EMAIL_MODE" value="user_email_mode">
+		<label for="emailmode">Update owner using user email?</label><br>
 		<h2>Action</h2>
 		<input type="submit" value="Send" />
 	</form>
