@@ -37,12 +37,14 @@
 	<h1>Change Owner</h1>
 	Updates lists with supplied owner (Talis Global User ID or email address)
 	<h2>Configuration</h2>
-	<p>Your file should be either a comma separated file (csv) with:<br><br>
+	<p>Your file should be either a comma separated file (csv) with:<br>
 		<ul>
 		<li>List ID followed by Talis Global User ID</li>
 		or<br>
 		<li>List ID followed by an email address</li>
 		</ul>
+		The file <emphasis>must</emphasis> use <strong>either</strong> Talis Global User ID <strong>or</strong> email address for the new owner. Mixing new owner data will cause errors.<br>
+		If using email addresses, remember to check the Update owner using user email? box below.
 	</p>
 	<form enctype="multipart/form-data" action="comp.php" method="POST">
 		<input type="hidden" name="MAX_FILE_SIZE" value="3000000" />
