@@ -6,7 +6,7 @@ Given a list of Item ID's, and old and new Local Control Numbers (LCNs) this scr
 
 The CSV file will have 3 columns and no header row.
 
-* item_guid — the id of the item to edit.  This is everything AFTER the `/items/` part of the URL and not including any file extensions.
+* item_uuid — the id of the item to edit.  This is everything AFTER the `/items/` part of the URL and not including any file extensions.
 * old_lcn — __note that this value is not checked__. If the `new_lcn` LCN is not already present in the item it will be added anyway and ANY existing LCN will be replaced)
 * new_lcn — The new value to add - can be letters and numbers and some punctuation marks.
 
