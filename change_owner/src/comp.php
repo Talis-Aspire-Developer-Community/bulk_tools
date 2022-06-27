@@ -57,7 +57,8 @@ echo "<br><br>";
 echo "Run started<br>";
 
 // Create log file
-$myfile = fopen("../../report_files/change_owner_output.log", "a") or die("Unable to open change_owner_output.log");
+$logfileLocation = "../../report_files/change_owner_output.log";
+$myfile = fopen($logfileLocation, "a") or die("Unable to open change_owner_output.log");
 fwrite($myfile, "Started | Input File: $upload_file | Date: " . date('d-m-Y H:i:s') . "\r\n");
 fwrite($myfile, "Updating using user email as input: $user_email_mode\r\n\r\n");
 fwrite($myfile, "List ID" . "\t" . "List link" . "\t" . "Old Owner Name" . "\t" . "Old Owner ID" . "\t" . "New Owner Name" . "\t" . "New Owner ID" . "\t" ."Outcome" . "\r\n");
@@ -169,5 +170,5 @@ fclose($file_handle);
 fclose($myfile);
 
 echo "<br>Run finished<br>";
-print("</br><a href=$myfile>Click Here to download the log file</a>");
+print("</br><a href=$logfileLocation>Click Here to download the log file</a>");
 ?>
