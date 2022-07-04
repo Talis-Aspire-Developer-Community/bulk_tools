@@ -140,7 +140,7 @@ function makeAllTimePeriodArray($time_period_json) {
         for ($i = 0, $size = count($time_period_json->data); $i < $size; ++$i) {
             $id = $time_period_json->data[$i]->id;
             $desc = $time_period_json->data[$i]->attributes->description;
-            $time_periods[$id] = $desc;
+            $time_periods[$id] = trim($desc);
         }
         return $time_periods;
 }
@@ -152,7 +152,7 @@ function makeActiveTimePeriodArray($time_period_json) {
             if ($is_active) {
                 $id = $time_period_json->data[$i]->id;
                 $desc = $time_period_json->data[$i]->attributes->description;
-                $time_periods[$id] = $desc;
+                $time_periods[$id] = trim($desc);
             }
         }
         return $time_periods;
