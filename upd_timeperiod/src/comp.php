@@ -72,7 +72,8 @@ echo "<br><br>";
 echo "Run started<br>";
 
 // Create log file
-$myfile = fopen("../../report_files/upd_timeperiod_output.log", "a") or die("Unable to open upd_timeperiod_output.log");
+$logfileLocation = "../../report_files/upd_timeperiod_output.log";
+$myfile = fopen($logfileLocation, "a") or die("Unable to open upd_timeperiod_output.log");
 fwrite($myfile, "Started | Input File: $upload_file | Date: " . date('d-m-Y H:i:s') . "\r\n\r\n");
 fwrite($myfile, "List ID" . "\t" . "List link" . "\t" . "Old Time Period" . "\t" ."New Time Period" . "\t" . "Outcome" . "\r\n");
 
@@ -167,5 +168,5 @@ fclose($file_handle);
 fclose($myfile);
 
 echo "<br>Run finished<br>";
-print("</br><a href=$myfile>Click Here to download the log file</a>");
+print("</br><a href=$logfileLocation>Click Here to download the log file</a>");
 ?>
