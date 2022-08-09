@@ -17,7 +17,7 @@ echo '<pre>';
 if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
 	echo "File was successfully uploaded.\n";
 } else {
-	echo "File is invalid, and failed to upload - Please try again. -\n";
+	echo "File failed to upload.\n";
 }
 echo "</br>";
 print_r($uploadfile);
