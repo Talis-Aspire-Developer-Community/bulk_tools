@@ -89,6 +89,34 @@ function getToken($clientID, $secret) {
 }
 
 /**
+ * isValidIsbn13
+ * https://en.wikipedia.org/wiki/ISBN#ISBN-13_check_digit_calculation
+ *
+ * @param  string $isbn
+ * @return boolean
+ */
+function isValidIsbn13($isbn)
+{
+    $check = 0;
+
+	// if it looks like an ISBN13
+	if (preg_match("/^97[89]\d{9}[\dxX]$/", $isbn)){
+		for ($i = 0; $i < 13; $i += 2) {
+			$check += (int)$isbn[$i];
+		}
+		
+		for ($i = 1; $i < 12; $i += 2) {
+			$check += 3 * $isbn[$i];
+		}
+		// and if the check digit is valid.
+		return (0 === ($check % 10)) ? true : false;
+	}
+
+	// else it can't be an ISBN13
+	return false;		
+}
+
+/**
  * Update the resource if we need to
  *
  * @param  mixed $resource
@@ -98,16 +126,13 @@ function getToken($clientID, $secret) {
  */
 function apply_update_logic($resource, $old_isbn, $new_isbn){
 	// if there are some isbn13s to check
-	// echo "<br/>Apply Update Logic - " . var_export($resource, true);
 	if (!empty($resource->attributes->isbn13s)) {
-		// echo "<br/>Apply Update Logic - there are ISBNs";
 		// make a copy of the isbns to keep any additional ones (safest)
 		$output_isbn13s = $resource->attributes->isbn13s;
 		
 		// for each of the input ISBNs, see if it should be updated
 		foreach ($resource->attributes->isbn13s as $key => $value) {
 			if ($value == $old_isbn){
-				// echo "<br/>Apply Update Logic - the value is the old ISBN";
 				$output_isbn13s[$key] = $new_isbn;
 			}
 		}
@@ -170,7 +195,7 @@ function updateResource($shortCode, $resource_id, $TalisGUID, $token, $new_isbn1
 		echo "<p>ERROR: There was an error updating the ISBN:</p><pre>" . var_export($output_json, true) . "</pre>";
 		fwrite($myfile, "ERROR: There was an error updating the ISBN" ."\t\r\n");
 	} else {
-		echo " - ISBN Updated Successfully to ". var_export($new_isbn13s, true) ."</br>";
+		echo "<br/> - ISBN Updated Successfully to ". var_export($new_isbn13s, true) ."</br>";
 		fwrite($myfile, "ISBN Updated Successfully" ."\t\r\n");
 	}
 
@@ -256,29 +281,31 @@ $token = getToken($clientID, $secret);
 $file_handle = fopen($uploadfile, "rb");
 
 while (!feof($file_handle) )  {
+	echo "<br />----------- <br />";
 
 	$line_of_text = fgets($file_handle);
 	$parts = explode(",", $line_of_text);
-	
-		$item_id = trim($parts[0]);
-		$old_isbn = trim($parts[1]);
 
-		if (!empty(trim($parts[2]))) {
-			$new_isbn = trim($parts[2]);
-		} else {
-			$new_isbn = "null";
-			echo "no new ISBN found. Removing $old_isbn from $item_id.</br>";
-		}
+	$item_id = trim($parts[0]);
+	$old_isbn = trim($parts[1]);
+	$new_isbn = trim($parts[2]);
 
 	echo "processing item_id: $item_id";
 	fwrite($myfile, $item_id ."\t");
-	//echo "</br>";
-	//echo "this is the old_isbn: $old_isbn";
 	fwrite($myfile, $old_isbn ."\t");
-	//echo "</br>";
-	//echo "this is the new_isbn: $new_isbn";
 	fwrite($myfile, $new_isbn ."\t");
-	//echo "</br>";
+
+	if (empty($item_id) || empty($old_isbn) || empty($new_isbn)) {
+		echo "<br/>Skipping - one of this row's columns are empty: ". $line_of_text;
+		fwrite($myfile, "Skipped - Empty columns\r\n");
+		continue;
+	}
+	
+	if (!isValidIsbn13($old_isbn) || !isValidIsbn13($new_isbn)) {
+		echo "<br/>Skipping - an ISBN is not a valid ISBN 13";
+		fwrite($myfile, "Skipped - ISBN is invalid\r\n");
+		continue;
+	}
 
 	$item = getItem($shortCode, $item_id, $TalisGUID, $token);
 	if (!empty($item)){
@@ -310,10 +337,10 @@ while (!feof($file_handle) )  {
 
 		if(empty($did_an_update)) {
 			echo "<br/>Nothing to do";
+			fwrite($myfile, "No updates need to be made\r\n");
 		}
 
 	}
-	echo "<br />----------- <br />";
 }
 
 

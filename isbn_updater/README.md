@@ -1,22 +1,23 @@
-# LCN Updater
+# ISBN Updater
 
-Given a list of Item ID's, and old and new Local Control Numbers (LCNs) this script will update the LCN and either add or remove it depending on the presence of values in the third CSV column.
+Given a list of Item ID's, and old and new ISBN13s this script will update the ISBN13.
+
+This script __ONLY Updates the ISBN13__.
+
+This script has been designed to work for quite a narrow use case, but could be extended in the future to have more functionality.
 
 ## Input file
 
 The CSV file will have 3 columns and no header row.
 
 * item_uuid — the id of the item to edit.  This is everything AFTER the `/items/` part of the URL and not including any file extensions.
-* old_lcn — __note that this value is not checked__. If the `new_lcn` LCN is not already present in the item it will be added anyway and ANY existing LCN will be replaced)
-* new_lcn — The new value to add - can be letters and numbers and some punctuation marks.
+* old_isbn — __note that this value is not validated__. If the old ISBN13 is not already present in the item it will not be updated
+* new_isbn — The new ISBN13 value to add
 
 ## Update logic
 
-Update of the item is based on the presence of values in the CSV columns. You can have any combination of addition, update or removal rows in your CSV file.
+ISBN13s can appear on either the primary or secondary parts of the resource and this script will check each to see if it can find the ISBN to update.
 
-|Action|item_guid|old_lcn|new_lcn|
-|--|--|--|--|
-|Update LCN|Yes|Yes|Yes|
-|remove LCN|Yes|Yes|No|
-|Add LCN|Yes|No|Yes|
+ISBNs cannot be added using this script.
 
+ISBNs cannot be removed using this script.
