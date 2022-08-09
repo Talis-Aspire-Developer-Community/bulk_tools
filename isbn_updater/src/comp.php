@@ -157,7 +157,7 @@ function apply_update_logic($resource, $old_isbn, $new_isbn){
  * @param  mixed $myfile Log output to a file.
  * @return void
  */
-function updateResource($shortCode, $resource_id, $TalisGUID, $token, $new_isbn13s, $myfile) {
+function updateResource($shortCode, $resource_id, $TalisGUID, $token, array $new_isbn13s, $myfile) {
 	$url = 'https://rl.talis.com/3/' . $shortCode . '/resources/' . $resource_id;
 
 	$body = json_decode('{
