@@ -117,14 +117,14 @@ function isValidIsbn13($isbn)
 }
 
 /**
- * Update the resource if we need to
+ * Work out what the new array of ISBN 13s should look like
  *
  * @param  mixed $resource
  * @param  mixed $old_isbn
  * @param  mixed $new_isbn
- * @return boolean|array False or the new ISBN13s to update
+ * @return boolean|array False if there are no changes that can be made or an array of new ISBN13s to update
  */
-function apply_update_logic($resource, $old_isbn, $new_isbn){
+function newIsbn13Array($resource, $old_isbn, $new_isbn){
 	// if there are some isbn13s to check
 	if (!empty($resource->attributes->isbn13s)) {
 		// make a copy of the isbns to keep any additional ones (safest)
@@ -286,6 +286,12 @@ while (!feof($file_handle) )  {
 	$line_of_text = fgets($file_handle);
 	$parts = explode(",", $line_of_text);
 
+	if (count($parts) !== 3) {
+		echo "<br/>Skipping - This row does not have three columns";
+		fwrite($myfile, "Skipped - This row does not have three columns: ${line_of_text}\r\n");
+		continue;
+	}
+
 	$item_id = trim($parts[0]);
 	$old_isbn = trim($parts[1]);
 	$new_isbn = trim($parts[2]);
@@ -316,7 +322,7 @@ while (!feof($file_handle) )  {
 		// TODO - update logic to satisfy these rules.
 		// if the resource has a part_of then check both records.
 		if (!empty($resources['primary'])) {
-			$replacement_isbn13s = apply_update_logic($resources['primary'], $old_isbn, $new_isbn);
+			$replacement_isbn13s = newIsbn13Array($resources['primary'], $old_isbn, $new_isbn);
 			if (!empty($replacement_isbn13s)) {
 				updateResource($shortCode, $resources['primary_id'], $TalisGUID, $token, $replacement_isbn13s, $myfile);
 				echo 'Resource: '. $resources['primary_id'];
@@ -325,7 +331,7 @@ while (!feof($file_handle) )  {
 			}
 		}
 		if (!empty($resources['secondary'])) {
-			$replacement_isbn13s = apply_update_logic($resources['secondary'], $old_isbn, $new_isbn);
+			$replacement_isbn13s = newIsbn13Array($resources['secondary'], $old_isbn, $new_isbn);
 			if (!empty($replacement_isbn13s)) {
 				updateResource($shortCode, $resources['secondary_id'], $TalisGUID, $token, $replacement_isbn13s, $myfile);
 				echo 'Resource: ' . $resources['secondary_id'];
