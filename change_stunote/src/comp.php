@@ -45,6 +45,13 @@ echo "</br>";
 echo "User GUID to use: " . $TalisGUID;
 echo "</br>";
 
+$shouldPublishLists = filter_var($_REQUEST['PUBLISH_LISTS'], FILTER_VALIDATE_BOOLEAN) || FALSE;
+
+echo "Should publish lists?: " . var_export($shouldPublishLists, true);
+echo "</br>";
+echo "</br>";
+
+$publishListArray = array();
 
 //**********CREATE LOG FILE TO WRITE OUTPUT*
 
@@ -79,6 +86,14 @@ while (($line = fgetcsv($file_handle, 1000, "\t")) !== FALSE) {
 	$input = itemBody_StuNote($itemID, $stuNote, $listID, $etag);
 	itemPatch($shortCode, $TalisGUID, $token, $input, $itemID);
 
+	// writing list ID to array for bulk publish POST
+	$forListArray = ['type' => 'draft_lists', 'id' => $listID];
+	array_push($publishListArray, $forListArray);
+
+}
+
+if ($shouldPublishLists === TRUE) {
+	bulkListPublish($shortCode, $TalisGUID, $token, $publishListArray);
 }
 
 //fwrite($myfile, "\r\n" . "Stopped | End of File: $uploadfile | Date: " . date('d-m-Y H:i:s') . "\r\n");
