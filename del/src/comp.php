@@ -104,8 +104,8 @@ while (!feof($file_handle) )  {
 
 	$input = '	{
 					"meta": {
-						"list_etag": "' . $etag . '",
-						"list_id": "' . $assoc_listid . '"
+						"list_etag": "' . $eTag . '",
+						"list_id": "' . $listId . '"
 					}
 				}';
 
@@ -135,13 +135,13 @@ while (!feof($file_handle) )  {
 		fwrite($myfile, "Item not deleted - failed" . "\t");
 		continue;
 	} else {
-		echo "    Deleted item $itemId from list $assoc_listid</br>";
+		echo "    Deleted item $itemId from list $listId</br>";
 		fwrite($myfile, "Item deleted successfully" . "\t");
 	}
 
 	//************GRAB**AN**ETAG**AGAIN*************
 
-	$list_lookup = 'https://rl.talis.com/3/' . $shortCode . '/draft_lists/' . $assoc_listid;
+	$list_lookup = 'https://rl.talis.com/3/' . $shortCode . '/draft_lists/' . $listId;
 
 	$ch5 = curl_init();
 
@@ -209,7 +209,7 @@ if ($shouldPublishLists === TRUE) {
 		fwrite($myfile, "Publish failed" . "\t");
 		exit;
 	} else {
-		echo "    Published changes to $assoc_listid </br>";
+		echo "    Published changes to $listId </br>";
 		fwrite($myfile, "Published successfully" . "\t");
 	}
 
