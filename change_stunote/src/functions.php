@@ -516,4 +516,45 @@ function etag_fetch_fromItem($shortCode, $itemID, $TalisGUID, $token) {
 	return $listDetails;
 }
 
+function bulkListPublish($shortCode, $TalisGUID, $token, $publishListArray) {
+	//**************PUBLISH LIST***************
+	$patch_url = 'https://rl.talis.com/3/' . $shortCode . '/bulk_list_publish_actions';
+	$publishListArray_encoded = json_encode($publishListArray);
+	$input = '{
+				"data": {
+					"type": "bulk_list_publish_actions",
+					"relationships": {
+						"draft_lists": {
+							"data": ' . $publishListArray_encoded . '
+						}
+					}
+				}	
+			}';
+
+	//**************PUBLISH POST*****************
+	$ch = curl_init();
+
+	curl_setopt($ch, CURLOPT_URL, $patch_url);
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+
+		"X-Effective-User: $TalisGUID",
+		"Authorization: Bearer $token",
+		'Cache-Control: no-cache'
+	));
+
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $input);
+
+	$output = curl_exec($ch);
+	$info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	curl_close($ch);
+	if ($info !== 202){
+		echo "<p>ERROR: There was an error publishing the list:</p><pre>" . var_export($output, true) . "</pre>";
+		exit;
+	} else {
+		echo "</br>Lists queued for publishing. An API Bulk List Publish Job notification will be emailed once complete.</br>";
+	}
+}
+
 ?>
