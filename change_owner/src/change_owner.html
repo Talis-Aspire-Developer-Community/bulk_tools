@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+ <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
+	
+	<style>
+		html, body {
+			margin: 10, 0;
+			padding: 0;
+			}
+			mark { 
+				background-color: yellow;
+				color: black;
+				}
+		body, input, select { font-family: 'Raleway', sans-serif; }
+		select, input { font-size: 1em; }
+		form { font-size: 1.5em; }
+		#shelf, #lastSeen, #res {
+			display: inline-block;
+			position: relative;
+			width: 50%;
+			box-sizing: border-box;
+			padding: 44px;
+			vertical-align: top;
+		}
+
+	</style>
+	
+ </head>
+
+ <body>
+
+</br><a href="../../index.html">Back to Index</a></br>
+
+<div id="TARL_bulk updater">
+	<h1>Change Owner</h1>
+	Updates lists with supplied owner (Talis Global User ID or email address)
+	<h2>Configuration</h2>
+	<p>Your file should be either a comma separated file (csv) with:<br>
+		<ul>
+		<li>List ID followed by Talis Global User ID</li>
+		or<br>
+		<li>List ID followed by an email address</li>
+		</ul>
+		The file <emphasis>must</emphasis> use <strong>either</strong> Talis Global User ID <strong>or</strong> email address for the new owner. Mixing new owner data will cause errors.<br>
+		If using email addresses, remember to check the Update owner using user email? box below.
+	</p>
+	<form enctype="multipart/form-data" action="comp.php" method="POST">
+		<input type="hidden" name="MAX_FILE_SIZE" value="3000000" />
+		<br>Upload csv file: <input name="userfile" type="file"/>
+		<h4>Options</h4>
+		Select logging level: 
+			<select name="loglvl">
+				<option value="2">WARNING</option>
+				<option value="1">ERROR</option>
+				<option value="3">INFO</option>
+				<option value="4">DEBUG</option>
+			</select>
+		<br><br>
+		<input type="checkbox" name="DRY_RUN" value="write_to_live">
+		<label for="dryrun">Write to live tenancy?</label><br>
+		<input type="checkbox" name="EMAIL_MODE" value="user_email_mode">
+		<label for="emailmode">Update owner using user email?</label><br>
+		<h2>Action</h2>
+		<input type="submit" value="Send" />
+	</form>
+	
+	
+</div>
+
+		
+  </body>
+
+</html>

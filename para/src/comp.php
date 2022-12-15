@@ -72,14 +72,6 @@ $myfile = fopen("../../report_files/para_output.log", "a") or die("Unable to ope
 fwrite($myfile, "Started | Input File: $uploadfile | Date: " . date('d-m-Y H:i:s') . "\r\n\r\n");
 fwrite($myfile, "List name" . "\t" . "List ID" . "\t" . "Item UUID" . "\t" . "Paragraph added" . "\t" . "List Published" . "\r\n");
 
-//************SET_VARIABLES***********
-//uncomment if you want to set these permanently.. good idea tbh!
-/*
-	$shortCode = "";
-	$clientID = "";
-	$secret = "";
-	$TalisGUID = "";
-*/
 
 $tokenURL = 'https://users.talis.com/oauth/tokens';
 $content = "grant_type=client_credentials";
@@ -132,12 +124,16 @@ while (!feof($file_handle) )  {
 	
 	//************GRAB**AN**ETAG***************
 
-	$barc = trim($parts[0]);
+	$inputListId = trim($parts[0]);
 
-	$item_lookup = 'https://rl.talis.com/3/' . $shortCode . '/draft_lists/' . $barc;
+	if (empty($inputListId)){
+		continue;
+	}
+
+	$list_lookup = 'https://rl.talis.com/3/' . $shortCode . '/draft_lists/' . $inputListId;
 	$ch1 = curl_init();
 	
-	curl_setopt($ch1, CURLOPT_URL, $item_lookup);
+	curl_setopt($ch1, CURLOPT_URL, $list_lookup);
 	curl_setopt($ch1, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($ch1, CURLOPT_HTTPHEADER, array(
 		
@@ -170,7 +166,7 @@ while (!feof($file_handle) )  {
 	fwrite($myfile, $uuid ."\t");
 
 	// writing list ID to array for bulk publish POST
-	$forListArray = ['type' => 'draft_lists', 'id' => $listID]; //check this $listID value
+	$forListArray = ['type' => 'draft_lists', 'id' => $listID]; 
 	array_push($publishListArray, $forListArray);
 
 	//**************ADD_PARAGRAPH***************
@@ -235,7 +231,7 @@ while (!feof($file_handle) )  {
 
 	$ch4 = curl_init();
 
-	curl_setopt($ch4, CURLOPT_URL, $item_lookup);
+	curl_setopt($ch4, CURLOPT_URL, $list_lookup);
 	curl_setopt($ch4, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($ch4, CURLOPT_HTTPHEADER, array(
 
@@ -306,7 +302,7 @@ while (!feof($file_handle) )  {
 	}
 
 	fwrite($myfile, "\n");
-	echo "End of Record.";
+	echo "End of Record.</br>";
 	echo "---------------------------------------------------</br></br>";
 
 fwrite($myfile, "\r\n" . "Stopped | End of File: $uploadfile | Date: " . date('d-m-Y H:i:s') . "\r\n");
