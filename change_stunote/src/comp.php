@@ -66,7 +66,7 @@ echo "</br></br>";
 $file_handle = fopen($uploadfile, "r");
 
 if ($file_handle == FALSE) {
-	echo_message_to_screen(ERROR, "Could not open csv file - Process Stopped.");
+	echo_message_to_screen(ERROR, "Could not open file - Process Stopped.");
 	exit;
 }
 
