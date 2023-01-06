@@ -1,4 +1,4 @@
-# Item - Bulk tool
+# Section - Bulk tool
 
 Adds a new section with items to a list.
 
