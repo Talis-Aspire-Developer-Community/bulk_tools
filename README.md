@@ -66,33 +66,6 @@ This guide will instruct you how to get these bulk tools working on a personal/w
 - click on: http://localhost/bulk_tools-master/index.html
 - Follow steps on webform.
 
-## Bulk adding items to lists
-
-An example upload file is included as list_id.txt and looks like this (one list ID per line):
-
-        5AF6B766-325D-A542-5837-7AD6DC4F703E
-        5D6EA0C2-45F4-268B-878B-0BEBF1C234E9
-        CB98F155-576C-553D-7C37-88D1A28CAF49
-        45146B68-9C56-92B0-AE28-0AB0D5A5239D
-        EAFDDB7B-B580-6FDD-8808-AE63781EB866
-        C3FECB4D-1509-60A3-BCB3-6E4142917C3A
-        B6E658B0-5DAE-CF98-5FAA-5DB345685320
-        C2D6D98F-5523-1A8D-BA00-5ED7114C3E9A
-        BC011E42-A395-9248-E147-1C869BFECF02
-        185251D1-23F3-F0CF-00C7-286D4645F07C
-
-List IDs can be acquired from the TARL 'All Lists' report by grabbing the unique ID from the end of each List Link:
-
-    http://yorksj.rl.talis.com/lists/5AF6B766-325D-A542-5837-7AD6DC4F703E
-
-Item IDs can be acquired from the TARL 'All List Items' report by grabbing the unique ID from the end of each Item Link:
-
-    http://yorksj.rl.talis.com/items/CED33BC7-309A-3306-47EB-0FB9CB9D9136
-    
-Paragraph Formatting. If you want to add formatting to your paragraph text, you can use a number of html tags. An example of some functionality can be seen with the below example - if pasted into the 'Input the desired text:' field - 
-
-        <h1>This <u>paragraph</u> is<strong> in bold</strong> and can be <mark background-color: yellow>highlighted</mark>.</h1>
-
 ## __IMPORTANT__ Publishing lists
 
 Every edit you make to a list is only made to the draft version of the list. to be visible to end users you need to publish your changes.
