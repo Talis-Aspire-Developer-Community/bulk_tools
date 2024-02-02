@@ -51,7 +51,7 @@ This guide will instruct you how to get these bulk tools working on a personal/w
 
 ## Putting the tool in the right place
 
-- Download the script from: https://github.com/jmunzer/bulk_tools/archive/master.zip
+- Download the script from: https://github.com/Talis-Aspire-Developer-Community/bulk_tools/archive/master.zip
 - Extract the downloaded ZIP file to the following location: c:\xampp\htdocs
 
 ## Running the tool
