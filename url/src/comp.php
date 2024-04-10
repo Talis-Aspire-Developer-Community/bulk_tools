@@ -136,7 +136,7 @@ while (($line = fgetcsv($file_handle, 1000, ",")) !== FALSE) {
 	}
 
 	$itemID = trim($line[0]);
-	$oldURL = filter_var(trim($line[1]), FILTER_VALIDATE_URL);
+	$oldURL = filter_var(trim($line[1]));
 	$newURL = filter_var(trim($line[2]), FILTER_VALIDATE_URL);
 
 	echo_message_to_screen(INFO, "</br> ---- ---- ---- ---- ---- ---- </br>");
