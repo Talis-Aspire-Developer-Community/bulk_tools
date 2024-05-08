@@ -16,7 +16,6 @@ final class IsbnUpdaterTest extends TestCase
     }
 
     // Clean ISBN
-
     public static function cleanISBNValues(): array
     {
         return [
@@ -83,5 +82,28 @@ final class IsbnUpdaterTest extends TestCase
     {
         $isbn = new ISBN($isbn);
         $this->assertEquals($want, $isbn->isValidIsbn10());
+    }
+
+    // ISBN Validation (Both ISBN10 and ISBN13)
+    public static function validISBNValues(): array
+    {
+        return [
+            // valid
+            'isbn13' => ['9783161484100', true],
+            'isbn10' => ['097522980X', true],
+
+            // invalid
+            'invalid - whitespace in middle' => ['978 31614 84100', false],
+            'invalid - too short'            => ['978316148410', false],
+            'invalid - too long'             => ['97831614841000', false],
+            'invalid - bad check digit'      => ['9783161484101', false],
+        ];
+    }
+
+    #[DataProvider('validISBNValues')]
+    public function testIsValid(string $isbn, $want): void
+    {
+        $isbn = new ISBN($isbn);
+        $this->assertEquals($want, $isbn->isValid());
     }
 }

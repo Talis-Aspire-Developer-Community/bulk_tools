@@ -77,6 +77,14 @@ final class ISBN
     }
 
     /**
+     * Check if this is valid (either ISBN10 or ISBN13)
+     */
+    public function isValid(): bool
+    {
+        return $this->isValidIsbn10() || $this->isValidIsbn13();
+    }
+
+    /**
      * Clean the ISBN string
      * 
      * Removes any dash or line characters from the ISBN string
