@@ -59,4 +59,29 @@ final class IsbnUpdaterTest extends TestCase
         $isbn = new ISBN($isbn);
         $this->assertEquals($want, $isbn->isValidIsbn13());
     }
+
+    // ISBN10 Validation
+    public static function validISBN10Values(): array
+    {
+        return [
+            // valid
+            'pre-cleaned'           => ['097522980X', true],
+            'dashes'                => ['0-9752298-0-X', true],
+            'more dashes'           => ['0-975-22980-X', true],
+            'untrimmed whitespace'  => [' 097522980X ', true],
+
+            // invalid
+            'invalid - whitespace in middle' => ['09752298 0X', false],
+            'invalid - too short'            => ['097522980', false],
+            'invalid - too long'             => ['097522980XX', false],
+            'invalid - bad check digit'      => ['0975229801', false],
+        ];
+    }
+
+    #[DataProvider('validISBN10Values')]
+    public function testIsValidIsbn10(string $isbn, $want): void
+    {
+        $isbn = new ISBN($isbn);
+        $this->assertEquals($want, $isbn->isValidIsbn10());
+    }
 }

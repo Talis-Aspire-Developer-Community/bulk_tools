@@ -16,7 +16,7 @@ final class ISBN
     }
 
     /**
-     * Check if the ISBN13 is valid
+     * Check if this is a valid isbn13
      * 
      * @return bool
      */
@@ -39,6 +39,41 @@ final class ISBN
 
         // else it can't be an ISBN13
         return false;
+    }
+
+    /**
+     * Check if this is a valid isbn10
+     */
+    public function isValidIsbn10(): bool
+    {
+        $isbn = $this->clean();
+
+        // ISBN-10 must be 10 characters long
+        if (strlen($isbn) != 10) {
+            return false;
+        }
+
+        // Calculate the sum of the first 9 digits multiplied by their position (1 to 9)
+        $sum = 0;
+        for ($i = 0; $i < 9; $i++) {
+            if (!is_numeric($isbn[$i])) {
+                return false;  // Ensure characters 1-9 are digits
+            }
+            $sum += ($i + 1) * $isbn[$i];
+        }
+
+        // The last character, which is the check digit, can also be 'X'
+        $lastChar = $isbn[9];
+        if ($lastChar == 'X') {
+            $sum += 10 * 10;
+        } elseif (is_numeric($lastChar)) {
+            $sum += 10 * $lastChar;
+        } else {
+            return false;  // Last character must be a digit or 'X'
+        }
+
+        // Valid ISBN-10 must be divisible by 11
+        return $sum % 11 == 0;
     }
 
     /**
