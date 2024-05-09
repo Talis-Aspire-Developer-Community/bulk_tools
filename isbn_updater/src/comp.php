@@ -28,7 +28,8 @@ echo "</br>";
  * Get the user config file. This script will fail disgracefully if it has not been created and nothing will happen.
  */
 require('../../user.config.php');
-require_once './isbn_updater/src/isbn.php';
+require_once 'isbn.php';
+require_once 'resource.php';
 
 echo "Tenancy Shortcode set: " . $shortCode;
 echo "</br>";
@@ -126,27 +127,23 @@ function isValidIsbn13($isbn)
  * @param  mixed $new_isbn
  * @return boolean|array False if there are no changes that can be made or an array of new ISBN13s to update
  */
-function newIsbn13Array($resource, $old_isbn, $new_isbn)
+function newIsbnArray(array $currVals, ISBN $old_isbn, ISBN $new_isbn): array
 {
 	// if there are some isbn13s to check
-	if (!empty($resource->attributes->isbn13s)) {
-		// make a copy of the isbns to keep any additional ones (safest)
-		$output_isbn13s = $resource->attributes->isbn13s;
+	if (empty($currVals) || !is_array($currVals)) {
+		return false;
+	}
+	// make a copy of the isbns to keep any additional ones (safest)
+	$result = $currVals;
 
-		// for each of the input ISBNs, see if it should be updated
-		foreach ($resource->attributes->isbn13s as $key => $value) {
-			if ($value == $old_isbn) {
-				$output_isbn13s[$key] = $new_isbn;
-			}
-		}
-
-		// if the input and output are not the same then changes were made.
-		if ($output_isbn13s !== $resource->attributes->isbn13s) {
-			return $output_isbn13s;
+	// for each of the input ISBNs, see if it should be updated
+	foreach ($currVals as $key => $value) {
+		$currIsbn = new ISBN($value);
+		if ($currIsbn->clean() == $old_isbn->clean()) {
+			$result[$key] = $new_isbn->clean();
 		}
 	}
-	// otherwise return false as there is nothing to do
-	return false;
+	return $result;
 }
 
 /**
@@ -160,22 +157,21 @@ function newIsbn13Array($resource, $old_isbn, $new_isbn)
  * @param  mixed $myfile Log output to a file.
  * @return void
  */
-function updateResource($shortCode, $resource_id, $TalisGUID, $token, array $new_isbn13s, $myfile)
+function updateResource($shortCode, $resource_id, $TalisGUID, $token, array $new_isbn13s, array $new_isbn10s, $myfile)
 {
 	$url = 'https://rl.talis.com/3/' . $shortCode . '/resources/' . $resource_id;
 
-	$body = json_decode('{
-			"data": {
-				"type": "resources",
-				"id": "",
-				"attributes": {
-					"isbn13s": []
-				}
-			}
-			}');
+	$body = [
+		"data" => [
+			"type" => "resources",
+			"id" => "",
+			"attributes" => []
+		]
+	];
 
-	$body->data->id = $resource_id;
-	$body->data->attributes->isbn13s = $new_isbn13s;
+	$body['data']['id'] = $resource_id;
+	$body['data']['attributes']['isbn13s'] = $new_isbn13s;
+	$body['data']['attributes']['isbn10s']  = $new_isbn10s;
 
 	$ch = curl_init();
 
@@ -297,28 +293,34 @@ while (!feof($file_handle)) {
 
 	if (count($parts) !== 3) {
 		echo "<br/>Skipping - This row does not have three columns";
-		fwrite($myfile, "Skipped - This row does not have three columns: ${line_of_text}\r\n");
+		fwrite($myfile, "Skipped - This row does not have three columns: {$line_of_text}\r\n");
 		continue;
 	}
 
 	$item_id = trim($parts[0]);
-	$old_isbn = trim($parts[1]);
-	$new_isbn = trim($parts[2]);
+	$old_isbn = new ISBN($parts[1]);
+	$new_isbn = new ISBN($parts[2]);
 
 	echo "processing item_id: $item_id";
 	fwrite($myfile, $item_id . "\t");
-	fwrite($myfile, $old_isbn . "\t");
-	fwrite($myfile, $new_isbn . "\t");
+	fwrite($myfile, $old_isbn->getRaw() . "\t");
+	fwrite($myfile, $new_isbn->getRaw() . "\t");
 
-	if (empty($item_id) || empty($old_isbn) || empty($new_isbn)) {
+	if (empty($item_id) || empty($old_isbn->getRaw()) || empty($new_isbn->getRaw())) {
 		echo "<br/>Skipping - one of this row's columns are empty: " . $line_of_text;
 		fwrite($myfile, "Skipped - Empty columns\r\n");
 		continue;
 	}
 
-	if (!isValidIsbn13($old_isbn) || !isValidIsbn13($new_isbn)) {
-		echo "<br/>Skipping - an ISBN is not a valid ISBN 13";
-		fwrite($myfile, "Skipped - ISBN is invalid\r\n");
+	if (!$old_isbn->isValid()) {
+		echo "<br/>Skipping - Old ISBN is not a valid ISBN 13";
+		fwrite($myfile, "Skipped - Old ISBN is invalid\r\n");
+		continue;
+	}
+
+	if (!$new_isbn->isValid()) {
+		echo "<br/>Skipping - New ISBN is not a valid ISBN 13";
+		fwrite($myfile, "Skipped - New ISBN is invalid\r\n");
 		continue;
 	}
 
@@ -328,23 +330,23 @@ while (!feof($file_handle)) {
 		$resources = detect_resources($item);
 		$did_an_update = false;
 
-		// TODO - update logic to satisfy these rules.
 		// if the resource has a part_of then check both records.
-		if (!empty($resources['primary'])) {
-			$replacement_isbn13s = newIsbn13Array($resources['primary'], $old_isbn, $new_isbn);
-			if (!empty($replacement_isbn13s)) {
-				updateResource($shortCode, $resources['primary_id'], $TalisGUID, $token, $replacement_isbn13s, $myfile);
-				echo 'Resource: ' . $resources['primary_id'];
-				fwrite($myfile, $resources['primary_id'] . "\t");
-				$did_an_update = true;
+		$selected_resources = [$resources['primary'], $resources['secondary']];
+		foreach ($selected_resources as $r) {
+			if (empty($r)) {
+				continue;
 			}
-		}
-		if (!empty($resources['secondary'])) {
-			$replacement_isbn13s = newIsbn13Array($resources['secondary'], $old_isbn, $new_isbn);
-			if (!empty($replacement_isbn13s)) {
-				updateResource($shortCode, $resources['secondary_id'], $TalisGUID, $token, $replacement_isbn13s, $myfile);
-				echo 'Resource: ' . $resources['secondary_id'];
-				fwrite($myfile, $resources['secondary_id'] . "\t");
+			$resource = new Resource($r);
+			$updated = processResource(
+				$resource,
+				$old_isbn,
+				$new_isbn,
+				$shortCode,
+				$TalisGUID,
+				$token,
+				$myfile
+			);
+			if ($updated) {
 				$did_an_update = true;
 			}
 		}
@@ -354,6 +356,29 @@ while (!feof($file_handle)) {
 			fwrite($myfile, "No updates need to be made\r\n");
 		}
 	}
+}
+
+function processResource(Resource $resource, $old_isbn, $new_isbn, $shortCode, $TalisGUID, $token, $myfile): bool
+{
+	$replacement_isbn13s = newIsbnArray($resource->getIsbn13s(), $old_isbn, $new_isbn);
+	$replacement_isbn10s = newIsbnArray($resource->getIsbn10s(), $old_isbn, $new_isbn);
+	if ($replacement_isbn10s == $resource->getIsbn10s() && $replacement_isbn13s == $resource->getIsbn13s()) {
+		echo "<br/>Skipping - No updates need to be made";
+		fwrite($myfile, "No updates need to be made\r\n");
+		return false;
+	}
+	updateResource(
+		$shortCode,
+		$resource->getId(),
+		$TalisGUID,
+		$token,
+		$replacement_isbn13s,
+		$replacement_isbn10s,
+		$myfile
+	);
+	echo 'Resource: ' . $resource->getId();
+	fwrite($myfile, $resource->getId() . "\t");
+	return true;
 }
 
 
