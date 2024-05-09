@@ -2,7 +2,6 @@
 
 This guide will demonstrate two methods of running this tool locally - Docker and XAMPP.
 
-
 ## Installing
 
 *If you would like to run this with [Docker](https://www.docker.com/), please see the [wiki page](https://github.com/Talis-Aspire-Developer-Community/bulk_tools/wiki/Running-with-Docker).  If you aren't sure, proceed with the XAMPP instructions below*
@@ -13,7 +12,7 @@ This guide will instruct you how to get these bulk tools working on a personal/w
 
 - First download & run XAMPP.
 
-  This can be found at https://www.apachefriends.org/
+  This can be found at <https://www.apachefriends.org/>
   - Download the latest version for your operating system of choice.
 
 - Once in the installer you will be prompted to 'Select Components'.
@@ -43,27 +42,27 @@ This guide will instruct you how to get these bulk tools working on a personal/w
 
 - Once the XAMPP Control Panel is running, start the Apache service by clicking 'Start' under Actions. If successful, you should see the following:
 
-        10:49:53  [main] 	Control Panel Ready
-        10:49:56  [Apache] 	Attempting to start Apache app...
-        10:49:56  [Apache] 	Status change detected: running
-        
+        10:49:53  [main]  Control Panel Ready
+        10:49:56  [Apache]  Attempting to start Apache app...
+        10:49:56  [Apache]  Status change detected: running
+
     ...and the Apache module will be highlighted in green.
 
 ## Putting the tool in the right place
 
-- Download the script from: https://github.com/Talis-Aspire-Developer-Community/bulk_tools/archive/master.zip
+- Download the script from: <https://github.com/Talis-Aspire-Developer-Community/bulk_tools/archive/master.zip>
 - Extract the downloaded ZIP file to the following location: c:\xampp\htdocs
 
 ## Running the tool
 
-- If this is your first time 
+- If this is your first time
   - make a copy of the `template.user.config.php` file and call it `user.config.php`
   - Enter your Shortcode,
   - Client ID,
   - Client Secret
   - and talis_guid user guid (this value can be found in the final column of the exported report: All User Profiles)
   - Check with Talis Support if you don't know what any of these values should be
-- click on: http://localhost/bulk_tools-master/index.html
+- click on: <http://localhost/bulk_tools-master/index.html>
 - Follow steps on webform.
 
 ## __IMPORTANT__ Publishing lists
@@ -102,3 +101,19 @@ If you forget to make the change on the last operation, don't worry, as you can 
 
 - Report files are under the root folder of ./report_files and are separated by function.
 - If you extracted the tool to the suggested location in the above steps, this will be: c:\xampp\htdocs\bulk_tools-master\report_files\. Alternatively, you can find quick links to the report files from the index page > Output Logs > Output Directory
+
+## Development
+
+To install PHPUnit ready for testing, simply run:
+
+```bash
+php composer.phar update
+```
+
+This requires you to be in an environment with php.
+
+Once installed you can run the tests with:
+
+```bash
+php composer.phar run-script tests
+```
