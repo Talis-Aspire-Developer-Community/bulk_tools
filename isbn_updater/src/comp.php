@@ -92,34 +92,6 @@ function getToken($clientID, $secret)
 }
 
 /**
- * isValidIsbn13
- * https://en.wikipedia.org/wiki/ISBN#ISBN-13_check_digit_calculation
- *
- * @param  string $isbn
- * @return boolean
- */
-function isValidIsbn13($isbn)
-{
-	$check = 0;
-
-	// if it looks like an ISBN13
-	if (preg_match("/^97[89]\d{9}[\dxX]$/", $isbn)) {
-		for ($i = 0; $i < 13; $i += 2) {
-			$check += (int)$isbn[$i];
-		}
-
-		for ($i = 1; $i < 12; $i += 2) {
-			$check += 3 * $isbn[$i];
-		}
-		// and if the check digit is valid.
-		return (0 === ($check % 10)) ? true : false;
-	}
-
-	// else it can't be an ISBN13
-	return false;
-}
-
-/**
  * Work out what the new array of ISBN 13s should look like
  *
  * @param  mixed $resource
@@ -129,7 +101,7 @@ function isValidIsbn13($isbn)
  */
 function newIsbnArray(array $currVals, ISBN $old_isbn, ISBN $new_isbn): array
 {
-	// if there are some isbn13s to check
+	// if there are some isbns to check
 	if (empty($currVals) || !is_array($currVals)) {
 		return false;
 	}
@@ -154,6 +126,7 @@ function newIsbnArray(array $currVals, ISBN $old_isbn, ISBN $new_isbn): array
  * @param  string $TalisGUID The user making the update
  * @param  string $token Your access token for the API
  * @param  array $new_isbn13s 
+ * @param  array $new_isbn10s
  * @param  mixed $myfile Log output to a file.
  * @return void
  */
