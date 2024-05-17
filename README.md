@@ -102,15 +102,51 @@ If you forget to make the change on the last operation, don't worry, as you can 
 - Report files are under the root folder of ./report_files and are separated by function.
 - If you extracted the tool to the suggested location in the above steps, this will be: c:\xampp\htdocs\bulk_tools-master\report_files\. Alternatively, you can find quick links to the report files from the index page > Output Logs > Output Directory
 
-## Development
+# Development
 
-To install PHPUnit ready for testing, simply run:
+## Environment
+
+The recommended development environment is a Docker container. This is the same environment that the tool is tested in.
+
+To set up the development environment, you will need to have Docker installed on your machine. You can download Docker from [here](https://www.docker.com/products/docker-desktop).
+
+Then, you can run the following command to start the development environment:
+
+```bash
+docker run -p 8080:80 -v "$PWD":/var/www/html php:8.2-apache
+```
+(if you have port issues, you can change 8080 to a free port on your machine)
+
+Then in a new tab find the docker container ID with
+        
+```bash
+docker ps
+```
+
+and run the following command to get a shell in the container:
+
+```bash
+docker exec -it <container_id> bash
+```
+
+## Installing dependencies
+
+Currently the only dependency is PHPUnit for testing. 
+
+You first need to make sure git is installed in the container:
+
+```bash
+apt-get update
+apt-get install git
+```
+
+Then run the following command to install PHPUnit:
 
 ```bash
 php composer.phar update
 ```
 
-This requires you to be in an environment with php.
+It will download the necessary dependencies and install PHPUnit.
 
 Once installed you can run the tests with:
 
