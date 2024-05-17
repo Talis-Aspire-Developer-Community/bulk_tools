@@ -1,28 +1,16 @@
 <?php
 
 declare(strict_types=1);
-final class ISBN
+final class ISBNParser
 {
-    private string $isbnStr;
-
-    public function __construct(string $isbnStr)
-    {
-        $this->isbnStr = $isbnStr;
-    }
-
-    public function getRaw(): string
-    {
-        return $this->isbnStr;
-    }
-
     /**
      * Check if this is a valid isbn13
      * 
      * @return bool
      */
-    public function isValidIsbn13(): bool
+    public function isValidIsbn13($isbn): bool
     {
-        $isbn = $this->clean();
+        $isbn = $this->clean($isbn);
         $check = 0;
         // if it looks like an ISBN13
         if (preg_match("/^97[89]\d{9}[\dxX]$/", $isbn)) {
@@ -44,9 +32,9 @@ final class ISBN
     /**
      * Check if this is a valid isbn10
      */
-    public function isValidIsbn10(): bool
+    public function isValidIsbn10(string $isbn): bool
     {
-        $isbn = $this->clean();
+        $isbn = $this->clean($isbn);
 
         // ISBN-10 must be 10 characters long
         if (strlen($isbn) != 10) {
@@ -79,9 +67,9 @@ final class ISBN
     /**
      * Check if this is valid (either ISBN10 or ISBN13)
      */
-    public function isValid(): bool
+    public function isValid(string $isbn): bool
     {
-        return $this->isValidIsbn10() || $this->isValidIsbn13();
+        return $this->isValidIsbn10($isbn) || $this->isValidIsbn13($isbn);
     }
 
     /**
@@ -91,9 +79,9 @@ final class ISBN
      * trims whitespace
      * @return string
      */
-    public function clean(): string
+    public function clean(string $isbn): string
     {
-        $trimmed = trim($this->isbnStr);
+        $trimmed = trim($isbn);
         return preg_replace('/[-]/', '', $trimmed);
     }
 }

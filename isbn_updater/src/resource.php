@@ -9,7 +9,7 @@ class Resource
     public function __construct(array | stdClass $resMap)
     {
         if ($resMap instanceof stdClass) {
-            $resMap = $this->objectToArray($resMap);
+            $resMap = objectToArray($resMap);
         }
         $this->resMap = $resMap;
     }
@@ -43,16 +43,17 @@ class Resource
         return $this->resMap['attributes']['isbn10s'];
     }
 
-    private function objectToArray($object)
-    {
-        if (!is_object($object) && !is_array($object)) {
-            return $object;
-        }
+}
 
-        if (is_object($object)) {
-            $object = get_object_vars($object);
-        }
-
-        return array_map([$this, 'objectToArray'], $object);
+function objectToArray($object)
+{
+    if (!is_object($object) && !is_array($object)) {
+        return $object;
     }
+
+    if (is_object($object)) {
+        $object = get_object_vars($object);
+    }
+
+    return array_map('objectToArray', $object);
 }

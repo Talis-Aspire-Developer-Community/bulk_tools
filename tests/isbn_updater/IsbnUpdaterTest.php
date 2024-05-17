@@ -2,108 +2,132 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../isbn_updater/src/isbn.php';
+require_once __DIR__ . '/../../isbn_updater/src/IsbnUpdater.php';
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class IsbnUpdaterTest extends TestCase
 {
-    public function testRaw(): void
-    {
-        $isbn = new ISBN('9783161484100');
-        $this->assertEquals('9783161484100', $isbn->getRaw());
-    }
-
-    // Clean ISBN
-    public static function cleanISBNValues(): array
+    public static function addIsbnDataProvider(): array
     {
         return [
-            'should remove dashes'                          => ['978-31614-84100', '9783161484100',],
-            'should leave untouched if cleaned already'     => ['9783161484100', '9783161484100'],
-            'should not remove whitespace in the middle'    => ['978 31614 84100', '978 31614 84100'],
-            'should trim whitespace'                        => [' 9780439023481 ', '9780439023481'],
+            'add ISBN-10' => [
+                'existingIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'existingIsbn13s' => ['978-3161484100', '9780439023481'],
+                'isbnToAdd' => '0-19-853453-1',
+                'expectedIsbn10s' => ['0-9752298-0-X', '0205080057', '0-19-853453-1'],
+                'expectedIsbn13s' => ['978-3161484100', '9780439023481'],
+                'wantSuccess' => true
+            ],
+            'add existing ISBN-10 (should not duplicate)' => [
+                'existingIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'existingIsbn13s' => ['978-3161484100', '9780439023481'],
+                'isbnToAdd' => '0205080057',
+                'expectedIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'expectedIsbn13s' => ['978-3161484100', '9780439023481'],
+                'wantSuccess' => true                
+            ],
+            'add ISBN-13' => [
+                'existingIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'existingIsbn13s' => ['978-3161484100', '9780439023481'],
+                'isbnToAdd' => '978-0198534532',
+                'expectedIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'expectedIsbn13s' => ['978-3161484100', '9780439023481', '978-0198534532'],
+                'wantSuccess' => true
+            ],
+            'add existing ISBN-13 (should not duplicate)' => [
+                'existingIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'existingIsbn13s' => ['978-3161484100', '9780439023481'],
+                'isbnToAdd' => '978-3161484100',
+                'expectedIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'expectedIsbn13s' => ['978-3161484100', '9780439023481'],
+                'wantSuccess' => true
+            ],
+            'add invalid ISBN13 should fail' => [
+                'existingIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'existingIsbn13s' => ['978-3161484100', '9780439023481'],
+                'isbnToAdd' => '978-3161484101',
+                'expectedIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'expectedIsbn13s' => ['978-3161484100', '9780439023481'],
+                'wantSuccess' => false
+            ],
+            'add invalid ISBN10 should fail' => [
+                'existingIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'existingIsbn13s' => ['978-3161484100', '9780439023481'],
+                'isbnToAdd' => '0205080058',
+                'expectedIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'expectedIsbn13s' => ['978-3161484100', '9780439023481'],
+                'wantSuccess' => false
+            ],
         ];
     }
 
-    #[DataProvider('cleanISBNValues')]
-    public function testClean(string $isbn, string $expected): void
+    #[DataProvider('addIsbnDataProvider')]
+    public function testAddIsbn(
+        array $existingIsbn10s, 
+        array $existingIsbn13s, 
+        string $isbnToAdd, 
+        array $expectedIsbn10s, 
+        array $expectedIsbn13s, 
+        bool $wantSuccess
+    ): void
     {
-        $isbn = new ISBN($isbn);
-        $this->assertEquals($expected, $isbn->clean());
+        $sut = new IsbnUpdater();
+        $sut->setExistingIsbn10s($existingIsbn10s);
+        $sut->setExistingIsbn13s($existingIsbn13s);
+        $result = $sut->addIsbn($isbnToAdd);
+        $this->assertEquals($wantSuccess, $result);
+        $this->assertEquals($expectedIsbn10s, $sut->getIsbn10s());
+        $this->assertEquals($expectedIsbn13s, $sut->getIsbn13s());
     }
 
-    // ISBN13 Validation
-    public static function validISBN13Values(): array
+    public static function removeIsbnDataProvider(): array
     {
         return [
-            // valid
-            'pre-cleaned'           => ['9783161484100', true],
-            'dashes'                => ['978-31614-84100', true],
-            'more dashes'           => ['978-0-439-02348-1', true],
-            'untrimmed whitespace'  => [' 9783161484100 ', true],
-            '979 prefix'            => ['9790001012966', true],
-
-            // invalid
-            'invalid - whitespace in middle' => ['978 31614 84100', false],
-            'invalid - too short'            => ['978316148410', false],
-            'invalid - too long'             => ['97831614841000', false],
-            'invalid - bad check digit'      => ['9783161484101', false],
+            'remove ISBN-10' => [
+                'existingIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'existingIsbn13s' => ['978-3161484100', '9780439023481'],
+                'isbnToRemove' => '0-9752298-0-X',
+                'expectedIsbn10s' => ['0205080057'],
+                'expectedIsbn13s' => ['978-3161484100', '9780439023481'],
+                'wantSuccess' => true
+            ],
+            'remove ISBN-13' => [
+                'existingIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'existingIsbn13s' => ['978-3161484100', '9780439023481'],
+                'isbnToRemove' => '978-3161484100',
+                'expectedIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'expectedIsbn13s' => ['9780439023481'],
+                'wantSuccess' => true
+            ],
+            'remove non-existing ISBN should fail' => [
+                'existingIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'existingIsbn13s' => ['978-3161484100', '9780439023481'],
+                'isbnToRemove' => '978-0198534532',
+                'expectedIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'expectedIsbn13s' => ['978-3161484100', '9780439023481'],
+                'wantSuccess' => false
+            ],
         ];
     }
 
-    #[DataProvider('validISBN13Values')]
-    public function testIsValidIsbn13(string $isbn, $want): void
+    #[DataProvider('removeIsbnDataProvider')]
+    public function testRemoveIsbn(
+        array $existingIsbn10s, 
+        array $existingIsbn13s, 
+        string $isbnToRemove, 
+        array $expectedIsbn10s, 
+        array $expectedIsbn13s, 
+        bool $wantSuccess
+    ): void
     {
-        $isbn = new ISBN($isbn);
-        $this->assertEquals($want, $isbn->isValidIsbn13());
-    }
-
-    // ISBN10 Validation
-    public static function validISBN10Values(): array
-    {
-        return [
-            // valid
-            'pre-cleaned'           => ['097522980X', true],
-            'dashes'                => ['0-9752298-0-X', true],
-            'more dashes'           => ['0-975-22980-X', true],
-            'untrimmed whitespace'  => [' 097522980X ', true],
-
-            // invalid
-            'invalid - whitespace in middle' => ['09752298 0X', false],
-            'invalid - too short'            => ['097522980', false],
-            'invalid - too long'             => ['097522980XX', false],
-            'invalid - bad check digit'      => ['0975229801', false],
-        ];
-    }
-
-    #[DataProvider('validISBN10Values')]
-    public function testIsValidIsbn10(string $isbn, $want): void
-    {
-        $isbn = new ISBN($isbn);
-        $this->assertEquals($want, $isbn->isValidIsbn10());
-    }
-
-    // ISBN Validation (Both ISBN10 and ISBN13)
-    public static function validISBNValues(): array
-    {
-        return [
-            // valid
-            'isbn13' => ['9783161484100', true],
-            'isbn10' => ['097522980X', true],
-
-            // invalid
-            'invalid - whitespace in middle' => ['978 31614 84100', false],
-            'invalid - too short'            => ['978316148410', false],
-            'invalid - too long'             => ['97831614841000', false],
-            'invalid - bad check digit'      => ['9783161484101', false],
-        ];
-    }
-
-    #[DataProvider('validISBNValues')]
-    public function testIsValid(string $isbn, $want): void
-    {
-        $isbn = new ISBN($isbn);
-        $this->assertEquals($want, $isbn->isValid());
+        $sut = new IsbnUpdater();
+        $sut->setExistingIsbn10s($existingIsbn10s);
+        $sut->setExistingIsbn13s($existingIsbn13s);
+        $result = $sut->removeIsbn($isbnToRemove);
+        $this->assertEquals($wantSuccess, $result);
+        $this->assertEquals($expectedIsbn10s, $sut->getIsbn10s());
+        $this->assertEquals($expectedIsbn13s, $sut->getIsbn13s());
     }
 }

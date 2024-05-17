@@ -28,7 +28,8 @@ echo "</br>";
  * Get the user config file. This script will fail disgracefully if it has not been created and nothing will happen.
  */
 require('../../user.config.php');
-require_once 'isbn.php';
+require_once 'IsbnParser.php';
+require_once 'IsbnUpdater.php';
 require_once 'resource.php';
 
 echo "Tenancy Shortcode set: " . $shortCode;
@@ -89,33 +90,6 @@ function getToken($clientID, $secret)
 	}
 
 	return $token;
-}
-
-/**
- * Work out what the new array of ISBN 13s should look like
- *
- * @param  mixed $resource
- * @param  mixed $old_isbn
- * @param  mixed $new_isbn
- * @return boolean|array False if there are no changes that can be made or an array of new ISBN13s to update
- */
-function newIsbnArray(array $currVals, ISBN $old_isbn, ISBN $new_isbn): array
-{
-	// if there are some isbns to check
-	if (empty($currVals) || !is_array($currVals)) {
-		return false;
-	}
-	// make a copy of the isbns to keep any additional ones (safest)
-	$result = $currVals;
-
-	// for each of the input ISBNs, see if it should be updated
-	foreach ($currVals as $key => $value) {
-		$currIsbn = new ISBN($value);
-		if ($currIsbn->clean() == $old_isbn->clean()) {
-			$result[$key] = $new_isbn->clean();
-		}
-	}
-	return $result;
 }
 
 /**
@@ -271,28 +245,25 @@ while (!feof($file_handle)) {
 	}
 
 	$item_id = trim($parts[0]);
-	$old_isbn = new ISBN($parts[1]);
-	$new_isbn = new ISBN($parts[2]);
+	$old_isbn = trim($parts[1]);
+	$new_isbn = trim($parts[2]);
 
 	echo "processing item_id: $item_id";
 	fwrite($myfile, $item_id . "\t");
-	fwrite($myfile, $old_isbn->getRaw() . "\t");
-	fwrite($myfile, $new_isbn->getRaw() . "\t");
+	fwrite($myfile, $old_isbn . "\t");
+	fwrite($myfile, $new_isbn . "\t");
 
-	if (empty($item_id) || empty($old_isbn->getRaw()) || empty($new_isbn->getRaw())) {
+	if (empty($item_id) || empty($old_isbn) || empty($new_isbn)) {
 		echo "<br/>Skipping - one of this row's columns are empty: " . $line_of_text;
 		fwrite($myfile, "Skipped - Empty columns\r\n");
 		continue;
 	}
 
-	if (!$old_isbn->isValid()) {
-		echo "<br/>Skipping - Old ISBN is not a valid ISBN 13";
-		fwrite($myfile, "Skipped - Old ISBN is invalid\r\n");
-		continue;
-	}
-
-	if (!$new_isbn->isValid()) {
-		echo "<br/>Skipping - New ISBN is not a valid ISBN 13";
+	// We are not going to validate the old ISBN, so we can handle any bad data.
+	// But we will validate the new ISBN so we are only adding in valid ISBNs.
+	$isbnParser = new IsbnParser();
+	if (!$isbnParser->isValid($new_isbn)) {
+		echo "<br/>Skipping - New ISBN is not a valid ISBN";
 		fwrite($myfile, "Skipped - New ISBN is invalid\r\n");
 		continue;
 	}
@@ -333,13 +304,24 @@ while (!feof($file_handle)) {
 
 function processResource(Resource $resource, $old_isbn, $new_isbn, $shortCode, $TalisGUID, $token, $myfile): bool
 {
-	$replacement_isbn13s = newIsbnArray($resource->getIsbn13s(), $old_isbn, $new_isbn);
-	$replacement_isbn10s = newIsbnArray($resource->getIsbn10s(), $old_isbn, $new_isbn);
+	// Work out the new isbn array values
+	$isbnUpdater = new IsbnUpdater();
+	$isbnUpdater->setExistingIsbn10s($resource->getIsbn10s());
+	$isbnUpdater->setExistingIsbn13s($resource->getIsbn13s());
+	$isbnUpdater->removeIsbn($old_isbn);
+	$isbnUpdater->addIsbn($new_isbn);
+
+	$replacement_isbn13s = $isbnUpdater->getIsbn13s();
+	$replacement_isbn10s = $isbnUpdater->getIsbn10s();
+
+	// Check if we need to update the resource
 	if ($replacement_isbn10s == $resource->getIsbn10s() && $replacement_isbn13s == $resource->getIsbn13s()) {
 		echo "<br/>Skipping - No updates need to be made";
 		fwrite($myfile, "No updates need to be made\r\n");
 		return false;
 	}
+
+	// Finally do the actual update
 	updateResource(
 		$shortCode,
 		$resource->getId(),
