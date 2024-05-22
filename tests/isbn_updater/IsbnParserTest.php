@@ -43,6 +43,8 @@ final class IsbnParserTest extends TestCase
             'invalid - too short'            => ['978316148410', false],
             'invalid - too long'             => ['97831614841000', false],
             'invalid - bad check digit'      => ['9783161484101', false],
+            'invalid - extra characters'     => ['9783161484100(pbk.)', false],
+            'invalid - bad prefix'           => ['9773161484100', false],
         ];
     }
 
@@ -68,6 +70,7 @@ final class IsbnParserTest extends TestCase
             'invalid - too short'            => ['097522980', false],
             'invalid - too long'             => ['097522980XX', false],
             'invalid - bad check digit'      => ['0975229801', false],
+            'invalid - extra characters'     => ['097522980X(pbk.)', false],
         ];
     }
 
@@ -87,10 +90,13 @@ final class IsbnParserTest extends TestCase
             'isbn10' => ['097522980X', true],
 
             // invalid
-            'invalid - whitespace in middle' => ['978 31614 84100', false],
-            'invalid - too short'            => ['978316148410', false],
-            'invalid - too long'             => ['97831614841000', false],
-            'invalid - bad check digit'      => ['9783161484101', false],
+            'invalid - whitespace in middle'    => ['978 31614 84100', false],
+            'invalid - too short'               => ['978316148410', false],
+            'invalid - too long'                => ['97831614841000', false],
+            'invalid - bad check digit isbn13'  => ['9783161484101', false],
+            'invalid - bad check digit isbn10'  => ['0975229809', false],
+            'invalid - extra characters isbn13' => ['9783161484100(pbk.)', false],
+            'invalid - extra characters isbn10' => ['097522980X(pbk.)', false],
         ];
     }
 
