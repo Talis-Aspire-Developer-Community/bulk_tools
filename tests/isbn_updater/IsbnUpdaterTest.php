@@ -26,7 +26,7 @@ final class IsbnUpdaterTest extends TestCase
                 'isbnToAdd' => '0205080057',
                 'expectedIsbn10s' => ['0-9752298-0-X', '0205080057'],
                 'expectedIsbn13s' => ['978-3161484100', '9780439023481'],
-                'wantSuccess' => true                
+                'wantSuccess' => false                
             ],
             'add ISBN-13' => [
                 'existingIsbn10s' => ['0-9752298-0-X', '0205080057'],
@@ -42,7 +42,7 @@ final class IsbnUpdaterTest extends TestCase
                 'isbnToAdd' => '978-3161484100',
                 'expectedIsbn10s' => ['0-9752298-0-X', '0205080057'],
                 'expectedIsbn13s' => ['978-3161484100', '9780439023481'],
-                'wantSuccess' => true
+                'wantSuccess' => false
             ],
             'add invalid ISBN13 should fail' => [
                 'existingIsbn10s' => ['0-9752298-0-X', '0205080057'],
@@ -101,7 +101,7 @@ final class IsbnUpdaterTest extends TestCase
                 'expectedIsbn13s' => ['9780439023481'],
                 'wantSuccess' => true
             ],
-            'remove non-existing ISBN should fail' => [
+            'remove non-existing ISBN should return false and make no change' => [
                 'existingIsbn10s' => ['0-9752298-0-X', '0205080057'],
                 'existingIsbn13s' => ['978-3161484100', '9780439023481'],
                 'isbnToRemove' => '978-0198534532',
@@ -109,6 +109,14 @@ final class IsbnUpdaterTest extends TestCase
                 'expectedIsbn13s' => ['978-3161484100', '9780439023481'],
                 'wantSuccess' => false
             ],
+            'remove empty ISBN should return false and make no change' => [
+                'existingIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'existingIsbn13s' => ['978-3161484100', '9780439023481'],
+                'isbnToRemove' => '',
+                'expectedIsbn10s' => ['0-9752298-0-X', '0205080057'],
+                'expectedIsbn13s' => ['978-3161484100', '9780439023481'],
+                'wantSuccess' => false
+            ]
         ];
     }
 
