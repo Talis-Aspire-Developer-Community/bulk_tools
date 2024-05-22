@@ -35,8 +35,29 @@
 
 <div id="TARL_bulk updater">
 		<h1>ISBN Updater - </h1>
-		<h2>You will need to provide a csv of Item IDs to update, along with an old ISBN13 and a new ISBN13. </h2>
-		<p>This script <strong>ONLY Updates the ISBN13</strong>. This script has been designed to work for quite a narrow use case, but could be extended in the future to have more functionality.</p>
+		<h2>You will need to provide a csv of Item IDs to update, along with an old ISBN and a new ISBN. </h2>
+
+		This should be in the format of a csv file with the following columns:
+		<ul>
+			<li>Item ID</li>
+			<li>Old ISBN</li>
+			<li>New ISBN</li>
+		</ul>
+		<p>For example (removing old, adding new):</p>
+		<pre>
+		Item ID, Old ISBN, New ISBN
+		46b44e79-47e4-45fe-b0e9-89fb42e7b216, 9781234567890, 9780987654321
+		</pre>
+		<p>Or (adding new only):</p>
+		<pre>
+		Item ID, Old ISBN,New ISBN
+		46b44e79-47e4-45fe-b0e9-89fb42e7b216,,9780987654321
+		</pre>
+		<p>Or (removing old only - take note of the last comma in the row):</p>
+		<pre>
+		Item ID, Old ISBN,New ISBN
+		46b44e79-47e4-45fe-b0e9-89fb42e7b216,9781234567890,
+		</pre>
 		
 			<form enctype="multipart/form-data" action="comp.php" method="POST">
 				<input type="hidden" name="MAX_FILE_SIZE" value="3000000" />
