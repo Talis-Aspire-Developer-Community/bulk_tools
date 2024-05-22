@@ -142,7 +142,8 @@ function updateResource($shortCode, $resource_id, $TalisGUID, $token, array $new
 		echo "<p>ERROR: There was an error updating the ISBN:</p><pre>" . var_export($output_json, true) . "</pre>";
 		fwrite($myfile, "ERROR: There was an error updating the ISBN" . "\t\r\n");
 	} else {
-		echo "<br/> - ISBN Updated Successfully to " . var_export($new_isbn13s, true) . "</br>";
+		echo "<br/> - ISBN13 values are now: " . var_export($new_isbn13s, true) . "</br>";
+		echo "<br/> - ISBN10 values are now: " . var_export($new_isbn10s, true) . "</br>";
 		fwrite($myfile, "ISBN Updated Successfully" . "\t\r\n");
 	}
 }
