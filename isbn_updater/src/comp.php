@@ -253,16 +253,23 @@ while (!feof($file_handle)) {
 	fwrite($myfile, $old_isbn . "\t");
 	fwrite($myfile, $new_isbn . "\t");
 
-	if (empty($item_id) || empty($old_isbn) || empty($new_isbn)) {
-		echo "<br/>Skipping - one of this row's columns are empty: " . $line_of_text;
+	if (empty($item_id)) {
+		echo "<br/>Skipping - No item ID provided: " . $line_of_text;
 		fwrite($myfile, "Skipped - Empty columns\r\n");
+		continue;
+	}
+
+	if (empty($old_isbn) && empty($new_isbn)) {
+		echo "<br/>Skipping - At lest one ISBN column needs a value: " . $line_of_text;
+		fwrite($myfile, "Skipped - At lest one ISBN column needs a value\r\n");
 		continue;
 	}
 
 	// We are not going to validate the old ISBN, so we can handle any bad data.
 	// But we will validate the new ISBN so we are only adding in valid ISBNs.
+	// An empty isbn is allowed (ie. no add, only remove)
 	$isbnParser = new IsbnParser();
-	if (!$isbnParser->isValid($new_isbn)) {
+	if (!empty($new_isbn) && !$isbnParser->isValid($new_isbn)) {
 		echo "<br/>Skipping - New ISBN is not a valid ISBN";
 		fwrite($myfile, "Skipped - New ISBN is invalid\r\n");
 		continue;
