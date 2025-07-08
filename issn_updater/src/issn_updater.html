@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+ <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
+	
+	<style>
+		html, body {
+			margin: 10, 0;
+			padding: 0;
+			}
+			mark { 
+				background-color: yellow;
+				color: black;
+				}
+		body, input, select { font-family: 'Raleway', sans-serif; }
+		select, input { font-size: 1em; }
+		form { font-size: 1.5em; }
+		#shelf, #lastSeen, #res {
+			display: inline-block;
+			position: relative;
+			width: 50%;
+			box-sizing: border-box;
+			padding: 44px;
+			vertical-align: top;
+		}
+
+	</style>
+	
+ </head>
+
+ <body>
+
+</br><a href="../../index.html">Back to Index</a></br>
+
+<div id="TARL_bulk updater">
+		<h1>ISSN Updater - </h1>
+		<h2>You will need to provide a csv with the following columns:</h2>
+    <ul>
+    <li>Item ID</li>
+    <li>Old ISSN</li>
+    <li>New ISSN</li>
+    </ul>
+		
+		
+			<form enctype="multipart/form-data" action="comp.php" method="POST">
+				<input type="hidden" name="MAX_FILE_SIZE" value="3000000" />
+				<h2>Configuration</h2>
+				<p>If you have not created your own <code>user.config.php</code> file as a copy of the template in the project root directory do so now!!</p>
+				<p>Otherwise, this script will give you an error about not being able to find the <code>user.config.php</code> file.</p>
+				<h2>Rules</h2>
+					Send this file: <input name="userfile" type="file" />
+					<br/>
+					<br/>
+          Identifier Type: <select name="ID_TYPE">
+						<option selected="selected">issns</option>
+						<option>eissns</option>
+					</select>
+					<br/>
+					<br/>
+          Chapters/Articles Mode*: <select name="UPDATE_MODE">
+						<option selected="selected">journal/book</option>
+						<option>article/chapter</option>
+            <option>both</option>
+					</select>
+          <p>* Chapters and Articles often have two parts to the item. This controls whether to target the 'Is part of ...' or 'Article/Chapter' tab in Talis.</p>
+					<br/>
+					<br/>
+				<h2>Action</h2>
+				<input type="submit" value="Send" />
+			</form>
+		
+		
+</div>
+
+		
+  </body>
+
+</html>
