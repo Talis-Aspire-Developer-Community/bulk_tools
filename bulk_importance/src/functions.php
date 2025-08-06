@@ -1,5 +1,11 @@
 <?php
 
+// This file is part of the Talis Bulk Tools project.
+// It contains some useful functions used by the bulk_importance tool.
+
+function echo_message_to_screen($log_level, $message){
+	echo "</br><strong>{$log_level}</strong>: $message";
+}
 
 function item($shortCode, $TalisGUID, $token, $item_id) {
 	
@@ -34,9 +40,6 @@ function item($shortCode, $TalisGUID, $token, $item_id) {
 	$item = array($resource_id, $resource_title, $list_id, $list_title);
 	return $item;
 }
-
-
-
 
 function impPost($shortCode, $TalisGUID, $token, $input_imp, $item_id, $resource_title) {
 	
@@ -93,49 +96,6 @@ function impBody($item_id, $etag, $list_id, $importanceID) {
 	return $input_imp;
 }
 
-function delete_body($shortCode, $item_id, $etag, $listID) {
-	
-
-	$input = '	{
-					"meta": {
-						"list_etag": "' . $etag . '",
-						"list_id": "' . $listID . '"
-					}
-				}';
-	return $input;
-}
-
-function delete_post($shortCode, $TalisGUID, $token, $input, $item_id, $listID) {
-    //var_export($input);
-	$delete_url = 'https://rl.talis.com/3/' . $shortCode . '/draft_items/' . $item_id;
-	$ch = curl_init();
-
-	curl_setopt($ch, CURLOPT_URL, $delete_url);
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-		
-		"X-Effective-User: $TalisGUID",
-		"Authorization: Bearer $token",
-		'Cache-Control: no-cache'
-	));
-
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $input);
-
-
-	$output = curl_exec($ch);
-	$info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-	curl_close($ch);
-	if ($info !== 200){
-		echo "<p>ERROR: There was an error deleting the item:</p><pre>" . var_export($output, true) . "</pre>";
-		//fwrite($myfile, "Item not deleted - failed" . "\t");
-		} else {
-		echo "Deleted item $item_id from list $listID</br>";
-		//fwrite($myfile, "Item deleted successfully" . "\t");
-	}
-	return $info;
-}
 
 function token_fetch($clientID, $secret) {
 	$tokenURL = 'https://users.talis.com/oauth/tokens';
@@ -171,46 +131,52 @@ function token_fetch($clientID, $secret) {
 	return $token;
 }
 
-function publish_single_list($shortCode, $listID, $TalisGUID, $token, $etag) {
+function bulk_publish_lists($shortCode, $TalisGUID, $token, $dedupe_pub_list) {
+	// Prepare the array for the bulk publish request
+	$publishListArray_encoded = json_encode($dedupe_pub_list);
 
-	$body = '{
-    "data": {
-        "type": "list_publish_actions"
-    },
-    "meta": {
-        "list_etag": "' . $etag . '"
-			}
-	}';
-	//var_export ($etag);
-	//var_export ($body);
-	
-	$url = 'https://rl.talis.com/3/' . $shortCode . '/draft_lists/' . $listID . '/publish_actions';
-	//echo $url;
-	$ch = curl_init();
-	
-	curl_setopt($ch, CURLOPT_URL, $url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	curl_setopt($ch, CURLOPT_POST, TRUE);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-	
+	//**************PUBLISH**LIST***************
+	$patch_url2 = 'https://rl.talis.com/3/' . $shortCode . '/bulk_list_publish_actions'; // change my endpoint
+	$input2 = '{
+				"data": {
+					"type": "bulk_list_publish_actions",
+					"relationships": {
+						"draft_lists": {
+							"data": ' . $publishListArray_encoded . '
+						}
+					}
+				}	
+			}';
+
+	//**************PUBLISH POST*****************
+
+	$ch3 = curl_init();
+
+	curl_setopt($ch3, CURLOPT_URL, $patch_url2);
+	curl_setopt($ch3, CURLOPT_CUSTOMREQUEST, 'POST');
+	curl_setopt($ch3, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch3, CURLOPT_HTTPHEADER, array(
+
 		"X-Effective-User: $TalisGUID",
 		"Authorization: Bearer $token",
 		'Cache-Control: no-cache'
-	
 	));
-	$output = curl_exec($ch);
-	$info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-	$output_json = json_decode($output);
-	curl_close($ch);
-	 
-     if ($info !== 202){
-		echo "<p>ERROR: There was an error publishing list $listID:</p><pre>" . var_export($output, true) . "</pre>";
-		
+
+	curl_setopt($ch3, CURLOPT_POSTFIELDS, $input2);
+
+
+	$output3 = curl_exec($ch3);
+	$info3 = curl_getinfo($ch3, CURLINFO_HTTP_CODE);
+	curl_close($ch3);
+	if ($info3 !== 202){
+		echo "<p>ERROR: There was an error publishing the lists</p><pre>" . var_export($output3, true) . "</pre>";
+		exit;
 	} else {
-		echo "</br></br>List: $listID changes successfully published - script complete</br>";
+		echo "Added lists to bulk list publish queue</br>";
 	}
+
 }
+
 
 function etag_fetch($shortCode, $listID, $TalisGUID, $token) {
 	$url = 'https://rl.talis.com/3/' . $shortCode . '/draft_lists/' . $listID;
@@ -242,203 +208,6 @@ function etag_fetch($shortCode, $listID, $TalisGUID, $token) {
 	return $etag;
 }
       
-function make_resource($shortCode, $title, $resource_type, $isbn, $token, $lcn, $author, $edition, $publisher_name, $web_addresses ){
 
-	$uuid = guidv4();
-	$url = 'https://rl.talis.com/3/' . $shortCode . '/resources';
-	 
-	if (!empty ($author)) {
-		$author  = '"' . $author . '"';
-	} else {
-		$author = "null";
-	}
-	 
-	if (!empty ($isbn)) {
-		$isbn = '["' . $isbn . '"]';
-	} else {
-		$isbn = "null";
-	}
-			
-	if (!empty ($edition)) {
-		$edition = '"' . $edition . '"';
-	} else {
-		$edition = "null";
-	}
-		 
-	if (!empty ($title)) {
-		$title = '"' . $title . '"';
-	} else {
-		$title = "null";
-	}
-	
-	if (!empty ($lcn)) {
-		$lcn = '"' . $lcn . '"';
-	} else {
-		$lcn = "null";
-	}
-		
-	if (!empty ($publisher_name)) {
-		$publisher_name = '["' . $publisher_name . '"]';
-	} else {
-		$publisher_name = "null";
-	}
-	
-	if (!empty ($resource_type)) {
-		$resource_type = '"' . $resource_type . '"';
-	} else {
-		$resource_type = "null";
-	}
-			 
-	if (!empty ($web_addresses)) {
-		$online_resource = $web_addresses;
-		$web_addresses = '["' . $web_addresses . '"]';
-
-		$online_resource_block = 
-			'"online_resource": {
-				"source": "uri",
-				"link": "' . $online_resource . '"
-			},';
-
-	} else {
-		$web_addresses = "null";
-		$online_resource_block = "";
-	}
-					 
-	$body = '{
-		"data": {
-		  "id": "' . $uuid . '",
-		  "type": "resources",
-		  "attributes": {
-            "authors": [
-                {
-                    "full_name": ' . $author . '          
-                }
-						],
-            "isbn13s": ' . $isbn . ',
-            "edition": ' . $edition . ',
-            "lcn": ' . $lcn . ',
-			' . $online_resource_block . '
-            "publisher_names": ' . $publisher_name . ',
-            "resource_type": ' . $resource_type . ',
-            "title": ' . $title . ',
-            "web_addresses": ' . $web_addresses . '
-			},
-		  "links": {},
-		  "meta": {},
-		  "relationships": {}
-			}
-	  }';
-	
-	//var_export($body);
-	
-	$ch = curl_init();
-	
-	curl_setopt($ch, CURLOPT_URL, $url);
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-		
-		"Authorization: Bearer $token",
-		'Cache-Control: no-cache'
-	
-	));
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-
-	$output = curl_exec($ch);
-	$info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-	//echo $info;
-	$output_json = json_decode($output);
-	curl_close($ch);
-	if ($info !== 200){
-		echo "<p>ERROR: There was an error creating resource for $isbn:</p><pre>" . var_export($output, true) . "</pre>";
-	}
-	
-	return $uuid;
-}
-
-function guidv4($data = null) {
-
-    // Generate 16 bytes (128 bits) of random data or use the data passed into the function.
-    $data = $data ?? random_bytes(16);
-    assert(strlen($data) == 16);
-
-    // Set version to 0100
-    $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
-    // Set bits 6-7 to 10
-    $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
-
-    // Output the 36 character UUID.
-    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
-}
-
-function itemPost($shortCode, $TalisGUID, $token, $input, $title) {
-	
-	
-	//var_export($input);
-	$item_patch = 'https://rl.talis.com/3/' . $shortCode . '/draft_items/';
-	$ch = curl_init();
-
-	curl_setopt($ch, CURLOPT_URL, $item_patch);
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-		
-		"X-Effective-User: $TalisGUID",
-		"Authorization: Bearer $token",
-		'Cache-Control: no-cache'
-	));
-
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $input);
-
-	
-	$output = curl_exec($ch);
-	$info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-	//echo $info;
-
-	$output_json_etag = json_decode($output);
-	//$etag = $output_json_etag->meta->list_etag;
-
-	curl_close($ch);
-	if ($info !== 201){
-		echo "<p>ERROR: There was an error adding the item: $title:</p><pre>" . var_export($output, true) . "</pre>";
-	}	
-}
-
-function itemBody($input_item, $etag, $listID, $resource_id) {
-	//$uuid = guidv4();		
-			
-	$input = ' {"data": {
-	"id": "' . $input_item . '",
-	"type": "items",
-	"relationships": {
-		"container": {
-		"data": {
-			"id": "' . $listID . '",
-			"type": "lists"
-		},
-		"meta": {
-			"index": 0
-		}
-		},
-
-		
-		"resource": {
-		"data": {
-			"id": "' . $resource_id . '",
-			"type": "resources"
-		}
-		}
-
-	}
-	},
-
-	"meta": {
-	"list_etag": "' . $etag . '",
-	"list_id": "' . $listID . '"
-	}
-	}';
-
-			return $input;
-}
 
 ?>

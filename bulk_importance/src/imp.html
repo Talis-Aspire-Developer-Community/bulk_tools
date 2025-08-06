@@ -37,30 +37,21 @@
 </br><a href="../../index.html">Back to Index</a></br>
 
 <div id="TARL_bulk updater">
-		<h1>PLACEHOLDER</h1>
-		<h2>This tool was designed for the automated population of a list where bookmarks do not yet exist in TARL.</h2>
+		<h1>Item Importance Updater</h1>
+		<p>This script allows you to bulk update the importance of items in your collection based on a CSV file.</p>
+		<p>It takes a CSV file as input with a single column containing item IDs.</p>
+		<p>Ensure that the CSV file is formatted correctly and that you have set up your <code>user.config.php</code> file with the correct <code>$importanceID</code> variable.</p>
 						
 			<form enctype="multipart/form-data" action="comp.php" method="POST">
 				<input type="hidden" name="MAX_FILE_SIZE" value="3000000" />
-				<h2>Configuration</h2>
-				<p>If you wish to assign an item importance, please ensure you have populated the <code>$importanceID</code> variable in <code>user.config.php</code> - please see documentation for more details.</p>
-				<p>If you have not created your own <code>user.config.php</code> file as a copy of the template in the project root directory do so now!!</p>
-				<p>Otherwise, this script will give you an error about not being able to find the <code>user.config.php</code> file.</p>
-				<h2>Rules</h2>
-			
 				
-				</br>New Acquisitions file: <input name="userfile" type="file"/>
+				</br>Upload file of Item IDs to add importance to: <input name="userfile" type="file"/>
 			
 				<br/>
 	
 				<h2>Action</h2>
 				<input type="submit" value="Send" />
-			</form>
-		
-		
+			</form>	
 </div>
-
-		
-  </body>
-
+</body>
 </html>
