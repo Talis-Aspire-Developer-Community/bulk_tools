@@ -29,7 +29,7 @@ function item($shortCode, $TalisGUID, $token, $item_id) {
 
 	curl_close($ch);
 	if ($info !== 200){
-		echo "<p>ERROR: There was an error getting item information</p><pre>" . var_export($output, true) . "</pre>";
+		echo_message_to_screen("ERROR", "There was an error getting item information:<pre>" . htmlspecialchars(var_export($output, true)) . "</pre>");
 		exit;
 	}
 	//var_export($output_json);
@@ -69,7 +69,7 @@ function impPost($shortCode, $TalisGUID, $token, $input_imp, $item_id, $resource
 
 	curl_close($ch);
 	if ($info !== 200){
-		echo "<p>ERROR: There was an error adding the importance to: $resource_title</p><pre>" . var_export($output, true) . "</pre>";
+		echo_message_to_screen("ERROR", "There was an error adding the importance to: $resource_title<pre>" . htmlspecialchars(var_export($output, true)) . "</pre>");
 	}
 }
 
@@ -114,9 +114,9 @@ function token_fetch($clientID, $secret) {
 	$info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
 	if ($info !== 200){
-		echo "<p>ERROR: There was an error getting a token:</p><pre>" . var_export($return, true) . "</pre>";
+		echo_message_to_screen("ERROR", "There was an error getting a token:<pre>" . htmlspecialchars(var_export($return, true)) . "</pre>");
 	} else {
-		echo "Successfully received token</br>";
+		echo_message_to_screen("INFO", "Successfully received token");
 	}
 
 	curl_close($ch);
@@ -126,7 +126,7 @@ function token_fetch($clientID, $secret) {
 	if (!empty($jsontoken->access_token)){
 		$token = $jsontoken->access_token;
 	} else {
-		echo "<p>ERROR: Unable to get an access token</p>";
+		echo_message_to_screen("ERROR", "Unable to get an access token");
 		exit;
 	}
 	return $token;
@@ -177,10 +177,10 @@ function bulk_publish_lists($shortCode, $TalisGUID, $token, $dedupe_pub_list) {
 	$info3 = curl_getinfo($ch3, CURLINFO_HTTP_CODE);
 	curl_close($ch3);
 	if ($info3 !== 202){
-		echo "<p>ERROR: There was an error publishing the lists</p><pre>" . var_export($output3, true) . "</pre>";
+		echo_message_to_screen("ERROR", "There was an error publishing the lists:<pre>" . htmlspecialchars(var_export($output3, true)) . "</pre>");
 		exit;
 	} else {
-		echo "Added lists to bulk list publish queue</br>";
+		echo_message_to_screen("INFO", "Added lists to bulk list publish queue");
 	}
 
 }
@@ -208,9 +208,7 @@ function etag_fetch($shortCode, $listID, $TalisGUID, $token) {
 	$etag = $output_json->data->meta->list_etag;
 	
 	/* uncomment for debugging
-	echo "    </br>";
-	echo "    Updated ETag: " . $etag . "</br>";
-	echo "</br>";
+	echo_message_to_screen("DEBUG", "Updated ETag: " . $etag);
 	*/
 
 	return $etag;
