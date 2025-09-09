@@ -9,7 +9,7 @@ function echo_message_to_screen($log_level, $message){
 
 function item($shortCode, $TalisGUID, $token, $item_id) {
 	
-	$url = 'https://rl.talis.com/3/' . $shortCode . '/items/' . $item_id . '?include=list,resource';
+	$url = 'https://rl.talis.com/3/' . $shortCode . '/draft_items/' . $item_id . '?include=list,resource';
 	$ch = curl_init();
 
 	curl_setopt($ch, CURLOPT_URL, $url);
@@ -30,6 +30,7 @@ function item($shortCode, $TalisGUID, $token, $item_id) {
 	curl_close($ch);
 	if ($info !== 200){
 		echo "<p>ERROR: There was an error getting item information</p><pre>" . var_export($output, true) . "</pre>";
+		exit;
 	}
 	//var_export($output_json);
 	$resource_id = $output_json->included[0]->id;
@@ -136,9 +137,17 @@ function bulk_publish_lists($shortCode, $TalisGUID, $token, $dedupe_pub_list) {
 	$publishListArray_encoded = json_encode($dedupe_pub_list);
 
 	//**************PUBLISH**LIST***************
-	$patch_url2 = 'https://rl.talis.com/3/' . $shortCode . '/bulk_list_publish_actions'; // change my endpoint
+	$patch_url2 = 'https://rl.talis.com/3/' . $shortCode . '/bulk_list_publish_actions'; 
 	$input2 = '{
 				"data": {
+					"id": "' . sprintf(
+						'%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+						mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+						mt_rand(0, 0xffff),
+						mt_rand(0, 0x0fff) | 0x4000,
+						mt_rand(0, 0x3fff) | 0x8000,
+						mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+					) . '",
 					"type": "bulk_list_publish_actions",
 					"relationships": {
 						"draft_lists": {
@@ -163,7 +172,6 @@ function bulk_publish_lists($shortCode, $TalisGUID, $token, $dedupe_pub_list) {
 	));
 
 	curl_setopt($ch3, CURLOPT_POSTFIELDS, $input2);
-
 
 	$output3 = curl_exec($ch3);
 	$info3 = curl_getinfo($ch3, CURLINFO_HTTP_CODE);

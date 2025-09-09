@@ -1,4 +1,5 @@
 <?php
+require('functions.php');
 
 print("</br><a href='imp.html'>Back to tool input page</a>");
 
@@ -30,7 +31,6 @@ echo "</br>";
  * Get the user config file. This script will fail disgracefully if it has not been created and nothing will happen.
  */
 require('../../user.config.php');
-require('functions.php');
 
 echo_message_to_screen("INFO", "Tenancy Shortcode set: " . $shortCode);
 echo "</br>";
@@ -75,14 +75,14 @@ while (($line = fgetcsv($file_handle, 1000, ",")) !== FALSE) {
 	impPost($shortCode, $TalisGUID, $token, $input_imp, $item_id, $resource_title);
 	fwrite($myfile, $item_id . "\t" . $list_id . "\t" . "Importance Updated" . "\r\n");
 	echo_message_to_screen("INFO", "Item ID: $item_id | List ID: $list_id | Resource Title: $resource_title | Outcome: Importance Updated");
-	array_push($pub_list, $list_id);
+	$pub_list[$list_id] = array('id' => $list_id, 'type' => 'draft_lists');
 }
 
 fclose($file_handle);
 
 // Here we deduplicate and publish the lists.
 //var_export($pub_list);
-$dedupe_pub_list = array_unique($pub_list);
+$dedupe_pub_list = array_values($pub_list);
 $arrayLength = count($dedupe_pub_list);
 echo_message_to_screen("INFO", "Total unique lists to publish: $arrayLength");
 bulk_publish_lists($shortCode, $TalisGUID, $token, $dedupe_pub_list);
