@@ -41,7 +41,7 @@ Before using this tool, you must configure your `user.config.php` file with the 
 - `$clientID` - Your API client ID
 - `$secret` - Your API client secret
 - `$TalisGUID` - User GUID for API authentication
-- `$importanceID` - The importance level ID to assign to items
+- `$importanceID` - The importance level ID to assign to items (use the getTenantImportances API route to find out what these will be. <https://rl.talis.com/3/docs#operation/getTenantImportances>)
 
 ## How to Use
 
